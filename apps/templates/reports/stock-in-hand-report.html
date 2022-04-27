@@ -1,0 +1,220 @@
+{% extends "layouts/base.html" %}
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- DataTables -->
+<link rel="stylesheet" href="  https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css  ">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css  ">
+<link rel="stylesheet" href="/static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+
+<div class="content-wrapper">
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid mt-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+            </div>
+            <!-- /.card-header -->
+            <div class="d-flex p-3 rounded d-flex justify-content-center text-white" style="background-color: #1fa67a;">
+              <h3 class="font-weight-bold">Stock In Hand Report</h3>
+            </div>
+
+            <div class="card-body">
+              <form class="form-inline">
+                {% csrf_token %}
+
+                <!-- <div class="form-group mb-2">
+                  <label>Select Store: </label>
+                  <input class="form-control" type="text" id="store" name="store">
+                </div> -->
+                <label>Select Store : </label>
+                <select class="form-select" id="selected_store">
+                  {% for store in stores %}
+                  <option value="{{store.store_name}}" selected>{{store.store_name}}</option>
+                  {% endfor %}
+                </select>
+
+                <div class="form-group mb-2">
+                  <label>Stock On Last Audit: </label>
+                  <input class="form-control" type="date" id="date" name="date">
+                </div>
+                <div class="form-group mb-2">
+                  <label>On Date: </label>
+                  <input class="form-control" type="date" id="date" name="date">
+                </div>
+
+                <label>SKU Name : </label>
+                <select class="form-select" id="selected_veg">
+                  <option selected>All</option>
+                  {% for veg in vegs %}
+                  <option value="{{category.name}}">{{veg.veg_name}}</option>
+                  {% endfor %}
+                </select>
+
+                <input class="btn mb-2 ml-2 text-white" type="button" id="btn_filter" value="Filter" style="background-color: #337ab7;">
+                
+              </form>
+
+              <table id="stock_table" class="table table-bordered table-hover">
+                <thead>
+                  <tr class="text-center">
+                    <th>#</th>
+                    <th>SKU ID</th>
+                    <th>SKU Name</th>
+                    <th>Stock On AUdit Date</th>
+                    <th>Inventory Added</th>
+                    <th>Stock Sent</th>
+                    <th>Wastege Reported</th>
+                    <th>Stock Packed</th>
+                    <th>Order Not Yet Packed</th>
+                    <th>System Stock Qty</th>
+                    <th>System Stock Price</th>
+                    <th>System Stock Total</th>
+                    <th>UoM</th>
+                  </tr>
+                </thead>
+                <tbody>
+                
+                  {% for stock in data %}
+
+                  <tr class="text-center">
+                    <td>{{stock.veg_inventory_id}}</td>
+                    <td>{{stock.veg_inventory_veg_id}}</td>
+                    <td>{{stock.veg_inventory_veg_id__veg_name}}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>{{stock.veg_inventory_stock_in_hand}}</td>
+                    <td>{{stock.veg_inventory_veg_id__veg_basic_rate}}</td>
+                    <td>{{stock.stock_total}}</td>
+                    <td>{{stock.veg_inventory_veg_id__veg_measurement}}</td>
+           
+
+                  </tr>
+                  {% endfor %}
+
+                </tbody>
+              </table>
+            </div>
+
+            <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.row -->
+</div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+
+{% endblock content %}
+
+
+
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables -->
+<script src="/static/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js  "></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js  "></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js  "></script>
+
+<!-- page script -->
+
+<script>
+  $(function () {
+    loadDataTable()
+  });
+
+    function loadDataTable(){
+    $("#stock_table").DataTable({
+      dom: 'Bfrtip',
+      buttons: [
+        'copy', 'csv', 'excel', 'pdf', 'print'
+      ],
+
+      "responsive": true,
+      "searching": true,
+
+      "autoWidth": false,
+    });
+  }
+
+
+
+  $('#btn_filter').click(function(){
+    var store=$('#selected_store option:selected').text();
+    var vegitable=$('#selected_veg option:selected').text();
+      // disable button
+      $(this).prop("disabled", true);
+      // add loading to button
+      $(this).val('loading...');
+
+    $.ajax({
+      method:'POST',
+      url:'/filter_stock/',
+      data:{
+        "store":store,
+        "vegitable":vegitable,
+        'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
+      },
+      datatype:"json",
+
+      success:function(response){
+        data = response.data;
+        console.log(data);
+        $('#stock_table').DataTable().clear().destroy();
+        var trHTML = '';
+        $.each(data, function (i, item) {
+          trHTML += '<tr class="text-center"><td>' + item.veg_inventory_id + '</td><td>' + item.veg_inventory_veg_id + '</td><td>' + item.veg_inventory_veg_id__veg_name + '</td><td>' + item.veg_inventory_stock_in_hand +'</td><td>'+item.veg_inventory_veg_id__veg_basic_rate +'</td><td>'+item.veg_inventory_veg_id__veg_measurement+'</td></tr>';
+        });
+        $('#stock_table').append(trHTML);
+
+        loadDataTable()
+        $('#btn_filter').prop("disabled", false);
+        $('#btn_filter').val('Filter');
+
+      }
+    })
+  })
+
+</script>
+{% endblock javascripts %}

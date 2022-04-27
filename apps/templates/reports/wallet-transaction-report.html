@@ -1,0 +1,220 @@
+{% extends "layouts/base.html" %}
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- DataTables -->
+<link rel="stylesheet" href="  https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css  ">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css  ">
+<link rel="stylesheet" href="/static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+
+<div class="content-wrapper mt-5">
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+            </div>
+            <!-- /.card-header -->
+            <div class="d-flex p-3 rounded d-flex justify-content-center text-white" style="background-color: #1fa67a;">
+              <h3 class="font-weight-bold">Wallet Transaction Report</h3>
+            </div>
+
+            <div class="card-body">
+
+              <form class="form-inline">
+                {% csrf_token %}
+                <div class="form-group mb-2">
+                  <label>Delivery From: </label>
+                  <input class="form-control" type="datetime-local" id="min" name="min">
+                </div>
+                <div class="form-group mb-2">
+                  <label>Delivery To: </label>
+                  <input class="form-control" type="datetime-local" id="max" name="min">
+                </div>
+                <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter" style="background-color: #337ab7;">
+              </form>
+
+              <table id="table_wallet" class="table table-bordered table-hover">
+                <thead>
+                  <tr class="text-center">
+                    <th>User ID</th>
+                    <th>User Name</th>
+                    <th>Date and Time</th>
+                    <th>Order ID</th>
+                    <th>Message</th>
+                    <th>Tr Type</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for data in walletData %}
+                  <tr class="text-center"></tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr class="text-center">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Total Credits</td>
+                    <td id="credit">0.00</td>
+                  </tr>
+                  <tr class="text-center">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Total Debts</td>
+                    <td id="debit" >0.00</td>
+                  </tr>
+                  <tr class="text-center">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Total Refund</td>
+                    <td id="refund">0.00</td>
+                  </tr>
+                  <tr class="text-center">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Total Amount</td>
+                    <td  id="total">0.00</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.row -->
+</div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+
+{% endblock content %}
+
+
+
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables -->
+<script src="/static/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js  "></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js  "></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js  "></script>
+
+<!-- page script -->
+
+<script>
+  $(function () {
+    loadDataTable()
+  });
+
+
+  function loadDataTable() {
+    $("#notify_report").DataTable({
+      dom: 'Bfrtip',
+      buttons: [
+        'copy', 'csv', 'excel', 'pdf', 'print'
+      ],
+
+      "responsive": true,
+      "searching": true,
+
+      "autoWidth": false,
+    });
+  }
+
+  $('#btn_filter').click(function () {
+    var min = $('#min').val();
+    var max = $('#max').val();
+      // disable button
+      $(this).prop("disabled", true);
+      // add loading to button
+      $(this).val('loading...');
+
+    $.ajax({
+      method: 'POST',
+      url: '/filter_wallet/',
+      data: {
+        "min": min,
+        "max": max,
+        'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
+      },
+      datatype: "json",
+
+      success: function (response) {
+        data = response.filter_date;
+        credit=response.credit['credit']
+        debit=response.debit['debit']
+        refund=response.refund['refund']
+        total=response.total
+
+        $('#credit').html(credit)
+        $('#debit').html(debit)
+        $('#refund').html(refund)
+        $('#total').html(total)
+
+        $('#table_wallet').DataTable().clear().destroy();
+        var trHTML = '';
+        $.each(data, function (i, item) {
+          trHTML += '<tr class="text-center"><td>' + item.wallet_trans_id + '</td><td>' + item.wallet_trans_user_id__user_name + '</td><td>' + item.wallet_trans_time + '</td><td>' + item.wallet_trans_placed_order_id + '</td><td>' + item.wallet_trans_message + '</td><td>' + item.wallet_trans_status + '</td><td>' + item.wallet_trans_amount +'</td></tr>';
+        });
+        $('#table_wallet').append(trHTML);
+
+
+        loadDataTable()
+        $('#btn_filter').prop("disabled", false);
+        $('#btn_filter').val('Filter');
+
+      }
+    })
+  })
+</script>
+{% endblock javascripts %}

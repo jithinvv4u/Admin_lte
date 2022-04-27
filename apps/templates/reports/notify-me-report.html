@@ -1,0 +1,196 @@
+{% extends "layouts/base.html" %}
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- DataTables -->
+<link rel="stylesheet" href="  https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css  ">
+<link rel="stylesheet" href="  https://cdn.datatables.net/datetime/1.1.2/css/dataTables.dateTime.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css  ">
+<link rel="stylesheet" href="/static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+
+<div class="content-wrapper mt-5">
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+            </div>
+            <!-- /.card-header -->
+            <div class="d-flex p-3 rounded d-flex justify-content-center text-white" style="background-color: #1fa67a;">
+              <h3 class="font-weight-bold">Notify Report</h3>
+            </div>
+<!-- 
+            <div class="card-body">
+              <table border="0" cellspacing="5" cellpadding="5" class="m-3">
+                <tbody>
+                  <tr>
+                    <td>Minimum date:</td>
+                    <td><input type="date" id="min" name="min"></td>
+                    <td>Maximum date:</td>
+                    <td><input type="date" id="max" name="max"></td>
+                    <td><input type="button" id="btn_filter" value="Filter"></td>
+                  </tr>
+                </tbody>
+              </table> -->
+              <form class="form-inline">
+                {% csrf_token %}
+
+                <div class="form-group mb-2">
+                  <label>Minimum date: </label>
+                  <input class="form-control" type="date" id="min" name="min">
+                </div>
+                <div class="form-group mb-2">
+                  <label>Maximum date: </label>
+                  <input class="form-control" type="date" id="max" name="min">
+                </div>
+                <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter" style="background-color: #337ab7;">
+                
+              </form>
+
+              <table id="notify_report" class="table table-bordered table-hover">
+                <thead>
+                  <tr class="text-center">
+                    <th>SKU ID</th>
+                    <th>SKU Name</th>
+                    <th>Counts</th>
+                    <th>Date</th>
+                    <th>Store</th>
+                  </tr>
+                </thead>
+                <tbody id="table_body">
+                  {% for data in notify_report %}
+
+                  <tr class="text-center">
+
+                    <td>{{data.veg_id}}</td>
+                    <td>{{data.veg_id__veg_name}}</td>
+                    <td>{{data.count}}</td>
+                    <td>{{data.delivery_date}}</td>
+                    <td>{{data.store_id__store_name}}</td>
+
+                  </tr>
+                  {% endfor %}
+
+                </tbody>
+              </table>
+            </div>
+
+            <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.row -->
+</div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+
+{% endblock content %}
+
+
+
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables -->
+<script src="/static/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js  "></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js  "></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js  "></script>
+<script src="https://cdn.datatables.net/datetime/1.1.2/js/dataTables.dateTime.min.js  "></script>
+
+
+
+<!-- page script -->
+
+<script>
+  $(function () {
+    loadDataTable()
+  });
+
+
+  function loadDataTable() {
+    $("#notify_report").DataTable({
+      dom: 'Bfrtip',
+      buttons: [
+        'copy', 'csv', 'excel', 'pdf', 'print'
+      ],
+
+      "responsive": true,
+      "searching": true,
+
+      "autoWidth": false,
+    });
+  }
+
+  $('#btn_filter').click(function () {
+    var min = $('#min').val();
+    var max = $('#max').val();
+      // disable button
+      $(this).prop("disabled", true);
+      // add loading to button
+      $(this).val('loading...');
+
+    $.ajax({
+      method: 'POST',
+      url: '/filter_notify/',
+      data: {
+        "min": min,
+        "max": max,
+        'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
+      },
+      datatype: "json",
+
+      success: function (response) {
+        data = response.notify_report;
+        $('#notify_report').DataTable().clear().destroy();
+        var trHTML = '';
+        $.each(data, function (i, item) {
+          trHTML += '<tr class="text-center"><td>' + item.veg_id + '</td><td>' + item.veg_id__veg_name + '</td><td>' + item.count + '</td><td>' + item.delivery_date + '</td><td>' + item.store_id__store_name + '</td></tr>';
+        });
+        $('#notify_report').append(trHTML);
+
+        loadDataTable()
+        $('#btn_filter').prop("disabled", false);
+        $('#btn_filter').val('Filter');
+
+      }
+    })
+  })
+</script>
+{% endblock javascripts %}

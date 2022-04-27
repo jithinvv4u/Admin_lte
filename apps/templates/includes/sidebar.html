@@ -1,5 +1,5 @@
 		<!-- Sidebar -->
-		<div class="sidebar sidebar-style-2" data-background-color="dark2">	
+		<div class="sidebar sidebar-style-2" data-background-color="navy">	
 			<div class="sidebar-wrapper scrollbar scrollbar-inner">
 				<div class="sidebar-content">
 
@@ -141,28 +141,23 @@
 							<div class="collapse" id="sidebarLayouts">
 								<ul class="nav nav-collapse">
 									<li>
-										<a href="{% url 'report-export' %}">
-											<span class="sub-item">Export</span>
+										<a href="{% url 'veg_price' %}">
+											<span class="sub-item">Veg Price Report</span>
 										</a>
 									</li>
 									<li>
-										<a href="/layout-overlay-sidebar.html">
-											<span class="sub-item">Overlay Sidebar</span>
+										<a href="{% url 'notify_report' %}">
+											<span class="sub-item">Notify Me Report</span>
 										</a>
 									</li>
 									<li>
-										<a href="/layout-compact-sidebar.html">
-											<span class="sub-item">Compact Sidebar</span>
+										<a href="{% url 'stock_in_hand' %}">
+											<span class="sub-item">Stock In Hand</span>
 										</a>
 									</li>
 									<li>
-										<a href="/layout-static-sidebar.html">
-											<span class="sub-item">Static Sidebar</span>
-										</a>
-									</li>
-									<li>
-										<a href="/layout-icon-menu.html">
-											<span class="sub-item">Icon Menu</span>
+										<a href="{% url 'wallet_transaction' %}">
+											<span class="sub-item">Wallet Transaction Report</span>
 										</a>
 									</li>
 								</ul>
