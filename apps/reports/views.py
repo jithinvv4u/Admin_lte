@@ -3,8 +3,6 @@ from django.shortcuts import render
 from .models import ffz_inventory_log, ffz_orders, ffz_packed, ffz_store,ffz_audit_log_details, ffz_category, ffz_veg_inventory, ffz_veg_price, ffz_vegitables,Notify,ffz_wallet_trans
 from django.db.models import Count,Max,Sum
 from django.db.models import F
-from itertools import chain
-from operator import attrgetter
 
 def notify_report_view(request):
     notify_report=Notify.objects.values(
