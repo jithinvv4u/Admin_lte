@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'apps.products',
     'apps.ffzusers',
     'apps.reports',
+    'apps.temp',
 ]
 
 MIDDLEWARE = [

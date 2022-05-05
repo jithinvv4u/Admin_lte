@@ -1,4 +1,3 @@
-from unittest import result
 from django.http import JsonResponse
 from django.shortcuts import render
 from .models import ffz_inventory_log, ffz_orders, ffz_packed, ffz_store,ffz_audit_log_details, ffz_category, ffz_veg_inventory, ffz_veg_price, ffz_vegitables,Notify,ffz_wallet_trans
@@ -16,7 +15,10 @@ def notify_report_view(request):
         ).annotate(
             count=Count('veg_id')
             )
-    return render(request, 'reports/notify-me-report.html',{'notify_report':notify_report})
+    return render(request, 
+                  'reports/notify-me-report.html',
+                  {'notify_report':notify_report}
+                  )
 
 def getfilterNotify(request):
     if request.method=='POST':
@@ -44,7 +46,7 @@ def veg_price_view(request):
     #         'veg_inventory_veg_id__veg_basic_rate',
     #         )
     vegs =ffz_veg_price.objects.filter(
-        veg_price_store_id__store_name='Coimbatore'
+        veg_price_store_id__store_name='Kakkanad'
         ).values(
             'veg_price_veg_id',
             'veg_price_veg_id__veg_name',
@@ -53,7 +55,15 @@ def veg_price_view(request):
             )
     categories=ffz_category.objects.values('name')
     stores=ffz_store.objects.values('store_name')
-    return render(request, 'reports/vegitable-price-report.html', {'vegitables': vegs,'categories':categories,'stores':stores})
+    return render(
+        request, 
+        'reports/vegitable-price-report.html', 
+        {
+            'vegitables': vegs,
+            'categories':categories,
+            'stores':stores,
+            }
+        )
 
 def getfilterVeg(request):
     if request.method=='POST':
@@ -93,7 +103,10 @@ def wallet_transaction_view(request):
         ).aggregate(
             debit=Max('wallet_trans_amount')
             )
-    return render(request, 'reports/wallet-transaction-report.html')
+    return render(
+        request, 
+        'reports/wallet-transaction-report.html',
+        )
 
 def getfilterWallet(request):
     if request.method=='POST':
@@ -129,7 +142,15 @@ def getfilterWallet(request):
         if refund['refund']==None:
             refund['refund']=0
         total=credit['credit']+debit['debit']+refund['refund']
-        return JsonResponse({'filter_date':list(filter_date),'credit':credit,'debit':debit,'refund':refund,'total':total})
+        return JsonResponse(
+            {
+                'filter_date':list(filter_date),
+                'credit':credit,
+                'debit':debit,
+                'refund':refund,
+                'total':total,
+                }
+            )
 
 def stock_in_hand_view(request):
     stores=ffz_store.objects.values('store_name')
@@ -146,15 +167,25 @@ def stock_in_hand_view(request):
             ).annotate(
                 stock_total=F('veg_inventory_stock_in_hand') * F('veg_inventory_veg_id__veg_basic_rate')
                 )
-    audit=ffz_audit_log_details.objects.values('audit_log_detail_veg_id','audit_log_detail_qty')
-    inventory_added=ffz_inventory_log.objects.values('inventory_veg_id','inventory_veg_qty')
+    audit=ffz_audit_log_details.objects.values(
+        'audit_log_detail_veg_id',
+        'audit_log_detail_qty'
+        )
+    inventory_added=ffz_inventory_log.objects.values(
+        'inventory_veg_id',
+        'inventory_veg_qty'
+        )
     order_not_yet_packed=ffz_orders.objects.filter(
         order_order_status_id=2,
         ).values(
             'order_veg_id',
-            'order_placed_id'
+            'order_placed_id',
             )
-    stock_packed=ffz_packed.objects.values('packed_order_id','packed_order_qty')
+    stock_packed=ffz_packed.objects.values(
+        'packed_order_id',
+        'packed_order_qty',
+        )
+    data2=ffz_veg_inventory.objects.filter()
     
     # result=audit | inventory_added
     # result = list(chain(audit, inventory_added))
@@ -164,7 +195,15 @@ def stock_in_hand_view(request):
     
     print(data)
 
-    return render(request,'reports/stock-in-hand-report.html',{'data':data,'stores':stores,'vegs':vegs})
+    return render(
+        request,
+        'reports/stock-in-hand-report.html',
+        {
+            'data':data,
+            'stores':stores,
+            'vegs':vegs,
+            }
+        )
 
 def getfilterStock(request):
     if request.method=='POST':

@@ -15,4 +15,5 @@ urlpatterns = [
     path("", include("apps.ffzusers.urls")),
     path("", include("apps.common.urls")),
     path("", include("apps.reports.urls")),
+    path("", include("apps.temp.urls")),
 ]

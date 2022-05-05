@@ -1,0 +1,426 @@
+{% extends "layouts/base.html" %}
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- DataTables -->
+<link rel="stylesheet" href="  https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css  ">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css  ">
+<link rel="stylesheet" href="/static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+
+<div class="content-wrapper mt-5">
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+            </div>
+            <!-- /.card-header -->
+            <div class="d-flex p-3 rounded d-flex justify-content-center text-white" style="background-color: #1fa67a;">
+              <h3 class="font-weight-bold">Vegitable</h3>
+            </div>
+
+            <div class="card-body">
+
+              <form class="form-inline">
+                {% csrf_token %}
+
+                <!-- <label>Store: </label>
+                <select class="form-select" id="select_store">
+                  {% for store in stores %}
+                  <option value="{{store.store_name}}" selected>{{store.store_name}}</option>
+                  {% endfor %}
+                </select> -->
+
+                <label>Category: </label>
+                <select class="form-select mr-2" id="select_category">
+                  <!-- <option selected>choose option</option> -->
+                  {% for category in categories %}
+                  <option value="{{category.name}}">{{category.name}}</option>
+                  {% endfor %}
+                </select>
+<!-- 
+                <div class="form-group mb-2">
+                  <label>Date: </label>
+                  <input class="form-control" type="date" id="date" name="date">
+                </div>
+                 -->
+                <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter" style="background-color: #337ab7;">
+              </form>
+
+<!-- Button trigger modal -->
+<button type="button" class="btn mb-1 mr-3" data-toggle="modal" style="float: right; background-color: #337ab7; color: white;" data-target="#exampleModal">
+  Import Excel
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Import Excel</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="file" name="myfile" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+          <button type="submit">upload</button>
+      
+        </form>
+      </div>
+      <div class="modal-footer">
+        <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+              <table id="vegitable" class="table table-bordered table-hover">
+                <thead>
+                  <tr class="text-center">
+                    <th>veg_id</th>
+                    <th>veg_name</th>
+                    <th>veg_slug</th>
+                    <th>veg_description</th>
+                    <th>veg_fertilizers</th>
+                    <th>veg_pesticides</th>
+                    <th>veg_storage</th>
+                    <th>veg_basic_rate</th>
+                    <th>veg_base_price_per</th>
+                    <th>veg_base_price_plus</th>
+                    <th>veg_current_rate_mon</th>
+                    <th>veg_current_rate_tue</th>
+                    <th>veg_current_rate_wed</th>
+                    <th>veg_current_rate_thu</th>
+                    <th>veg_current_rate_fri</th>
+                    <th>veg_current_rate_sat</th>
+                    <th>veg_current_rate_sun</th>
+                    <th>veg_market_rate</th>
+                    <th>veg_production_duration</th>
+                    <th>veg_yield_duration</th>
+                    <th>veg_min_qty</th>
+                    <th>veg_differ_qty</th>
+                    <th>veg_measurement</th>
+                    <th>veg_measurements_id</th>
+                    <th>veg_image</th>
+                    <th>veg_sort_order</th>
+                    <th>veg_pack_order</th>
+                    <th>veg_type</th>
+                    <th>veg_featured</th>
+                    <th>veg_remove_status</th>
+                    <th>veg_sub_not_intrested</th>
+                    <th>veg_hsn_code</th>
+                    <th>veg_gst</th>
+                    <th>veg_minimum_selling_price</th>
+                    <th>subscription_qty</th>
+                    <th>add_to_subscription</th>
+                    <th>veg_deep_link</th>
+                    <th>veg_n_img_main_url</th>
+                    <th>veg_n_img_thumb_url</th>
+                    <th>veg_crate_qty</th>
+                    <th>veg_auto_sort_order</th>
+                    <th>veg_audit_status</th>
+                    <th>veg_pq_adjust_status</th>
+                    <th>veg_c_img_main_url</th>
+                    <th>veg_c_img_thumb_url</th>
+
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for veg in vegitables %}
+                  
+                  <tr class="text-center">
+                    <td>{{veg.veg_id}}</td>
+                    <td>{{veg.veg_name}}</td>
+                    <td>{{veg.veg_slug}}</td>
+                    <td>{{veg.veg_description}}</td>
+                    <td>{{veg.veg_fertilizers}}</td>
+                    <td>{{veg.veg_pesticides}}</td>
+                    <td>{{veg.veg_storage}}</td>
+                    <td>{{veg.veg_basic_rate}}</td>
+                    <td>{{veg.veg_base_price_per}}</td>
+                    <td>{{veg.veg_base_price_plus}}</td>
+                    <td>{{veg.veg_current_rate_mon}}</td>
+                    <td>{{veg.veg_current_rate_tue}}</td>
+                    <td>{{veg.veg_current_rate_wed}}</td>
+                    <td>{{veg.veg_current_rate_thu}}</td>
+                    <td>{{veg.veg_current_rate_fri}}</td>
+                    <td>{{veg.veg_current_rate_sat}}</td>
+                    <td>{{veg.veg_current_rate_sun}}</td>
+                    <td>{{veg.veg_market_rate}}</td>
+                    <td>{{veg.veg_production_duration}}</td>
+                    <td>{{veg.veg_yield_duration}}</td>
+                    <td>{{veg.veg_min_qty}}</td>
+                    <td>{{veg.veg_differ_qty}}</td>
+                    <td>{{veg.veg_measurement}}</td>
+                    <td>{{veg.veg_measurements_id}}</td>
+                    <td>{{veg.veg_image}}</td>
+                    <td>{{veg.veg_sort_order}}</td>
+                    <td>{{veg.veg_pack_order}}</td>
+                    <td>{{veg.veg_type}}</td>
+                    <td>{{veg.veg_featured}}</td>
+                    <td>{{veg.veg_remove_status}}</td>
+                    <td>{{veg.veg_sub_not_intrested}}</td>
+                    <td>{{veg.veg_hsn_code}}</td>
+                    <td>{{veg.veg_gst}}</td>
+                    <td>{{veg.veg_minimum_selling_price}}</td>
+                    <td>{{veg.subscription_qty}}</td>
+                    <td>{{veg.add_to_subscription}}</td>
+                    <td>{{veg.veg_deep_link}}</td>
+                    <td>{{veg.veg_n_img_main_url}}</td>
+                    <td>{{veg.veg_n_img_thumb_url}}</td>
+                    <td>{{veg.veg_crate_qty}}</td>
+                    <td>{{veg.veg_auto_sort_order}}</td>
+                    <td>{{veg.veg_audit_status}}</td>
+                    <td>{{veg.veg_pq_adjust_status}}</td>
+                    <td>{{veg.veg_c_img_main_url}}</td>
+                    <td>{{veg.veg_c_img_thumb_url}}</td>
+                  </tr>
+                  {% endfor %}
+
+                </tbody>
+              </table>
+            </div>
+
+            <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.row -->
+</div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+
+{% endblock content %}
+
+
+
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables -->
+<script src="/static/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js  "></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js  "></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js  "></script>
+
+<!-- page script -->
+
+<script>
+
+
+ $(function () {
+    loadDataTable()
+  });
+
+
+   // Upload Editor - triggered from the import button. Used only for uploading a file to the browser
+   var uploadEditor = new $.fn.dataTable.Editor( {
+        fields: [ {
+            label: 'CSV file:',
+            name: 'csv',
+            type: 'upload',
+            ajax: function ( files, done ) {
+                // Ajax override of the upload so we can handle the file locally. Here we use Papa
+                // to parse the CSV.
+                Papa.parse(files[0], {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function (results) {
+                        if ( results.errors.length ) {
+                            console.log( results );
+                            uploadEditor.field('csv').error( 'CSV parsing error: '+ results.errors[0].message );
+                        }
+                        else {
+                            selectColumns( editor, results.data, results.meta.fields );
+                        }
+ 
+                        // Tell Editor the upload is complete - the array is a list of file
+                        // id's, which the value of doesn't matter in this case.
+                        done([0]);
+                    }
+                });
+            }
+        } ]
+    } );
+    
+
+  function loadDataTable() {
+    $("#vegitable").DataTable({
+      dom: 'Bfrtip',
+      buttons: [
+        'copy', 'csv', 'excel', 'pdf', 'print',
+      ],
+      "responsive": true,
+      "searching": true,
+      "autoWidth": false,
+      "paging": true,
+      "scrollX": true,
+      // "scrollY": 400,
+
+
+
+    });
+  }
+
+  $('#btn_filter').click(function(){
+    alert('ok')
+      var category=$('#select_category option:selected').text();
+    alert(category)
+      $.ajax({
+          method:'POST',
+          url:'/temp_vegitable/',
+          data:{
+              "category":category,
+              'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
+
+          },
+          datatype:"json",
+
+          success: function(response){
+            data=response.filtered_vegData
+            $('#vegitable').DataTable().clear().destroy();
+            console.log(data);
+            var trHTML = '';
+            $.each(data, function (i, item) {
+            trHTML += '<tr class="text-center"><td>' 
+              + item.veg_id + '</td><td>' 
+              + item.veg_name + '</td><td>' 
+                + item.veg_slug + '</td><td>' 
+                  + item.veg_description + '</td><td>' 
+                      + item.veg_fertilizers + '</td><td>' 
+                        + item.veg_pesticides + '</td><td>' 
+                          + item.veg_storage + '</td><td>' 
+                            + item.veg_basic_rate + '</td><td>' 
+                              + item.veg_base_price_per + '</td><td>' 
+                                + item.veg_base_price_plus + '</td><td>' 
+                                  + item.veg_current_rate_mon + '</td><td>' 
+                                    + item.veg_current_rate_tue + '</td><td>' 
+                                      + item.veg_current_rate_wed+ '</td><td>' 
+                                        + item.veg_current_rate_thu + '</td><td>' 
+                                          + item.veg_current_rate_fri + '</td><td>' 
+                                            + item.veg_current_rate_sat + '</td><td>' 
+                                              + item.veg_current_rate_sun+ '</td><td>' 
+                                                + item.veg_market_rate + '</td><td>' 
+                                                  + item.veg_production_duration + '</td><td>' 
+                                                    + item.veg_yield_duration + '</td><td>' 
+                                                      + item.veg_min_qty + '</td><td>' 
+                                                        + item.veg_differ_qty+ '</td><td>' 
+                                                          + item.veg_measurement + '</td><td>' 
+                                                            + item.veg_measurements_id + '</td><td>' 
+                                                              + item.veg_image + '</td><td>' 
+                                                                + item.veg_sort_order + '</td><td>' 
+                                                                  + item.veg_pack_order + '</td><td>' 
+                                                                    + item.veg_type + '</td><td>' 
+                                                                      + item.veg_featured + '</td><td>' 
+                                                                        + item.veg_remove_status + '</td><td>' 
+                                                                          + item.veg_sub_not_intrested + '</td><td>' 
+                                                                            + item.veg_hsn_code + '</td><td>' 
+                                                                              + item.veg_gst + '</td><td>' 
+                                                                                + item.veg_minimum_selling_price + '</td><td>' 
+                                                                                  + item.subscription_qty + '</td><td>' 
+                                                                                    + item.add_to_subscription + '</td><td>' 
+                                                                                      + item.veg_deep_link + '</td><td>' 
+                                                                                        + item.veg_n_img_main_url + '</td><td>' 
+                                                                                          + item.veg_n_img_thumb_url + '</td><td>' 
+                                                                                            + item.veg_crate_qty + '</td><td>' 
+                                                                                              + item.veg_auto_sort_order + '</td><td>' 
+                                                                                                + item.veg_audit_status + '</td><td>' 
+                                                                                                  + item.veg_pq_adjust_status + '</td><td>' 
+                                                                                                    + item.veg_c_img_main_url + '</td><td>' 
+                                                                                                      + item.veg_c_img_thumb_url +'</td></tr>';
+            });
+            $('#vegitable').append(trHTML);
+
+
+            loadDataTable()
+
+          }
+      })
+  })
+
+
+
+
+
+  // $('#upload_excel').click(function () {
+  //   var excel = $('#file').text();
+  //   var category = $('#select_category option:selected').text();
+  //   var date = $('#date').val();
+  //     // disable button
+  //     $(this).prop("disabled", true);
+  //     // add loading to button
+  //     $(this).val('loading...');
+  //     $.ajax({
+  //     method: 'POST',
+  //     url: '/filter_vegitble/',
+  //     data: {
+  //       "store": store,
+  //       "category":category,
+  //       "date":date,
+  //       'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
+  //     },
+  //     datatype: "json",
+
+  //     success: function (response) {
+  //       data = response.filtered_vegData;
+  //         console.log(data);
+  //       $('#veg_price_table').DataTable().clear().destroy();
+  //       var trHTML = '';
+  //       $.each(data, function (i, item) {
+  //         trHTML += '<tr class="text-center"><td>' 
+  //           + item.veg_price_veg_id + '</td><td>' 
+  //             + item.veg_price_veg_id__veg_name + '</td><td>' 
+  //               + item.veg_price_veg_id__veg_min_qty + '</td><td>' 
+  //                 + item.veg_price_basic_rate +'</td></tr>';
+  //       });
+  //       $('#veg_price_table').append(trHTML);
+
+  //       loadDataTable()
+  //       $('#btn_filter').prop("disabled", false);
+  //       $('#btn_filter').val('Filter');
+
+  //     }
+  //   })
+  // })
+
+</script>
+{% endblock javascripts %}
