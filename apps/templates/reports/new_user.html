@@ -31,59 +31,60 @@
             </div>
             <!-- /.card-header -->
             <div class="d-flex p-3 rounded d-flex justify-content-center text-white" style="background-color: #1fa67a;">
-              <h3 class="font-weight-bold">Vegitable Price Report</h3>
+              <h3 class="font-weight-bold">New User Report</h3>
             </div>
 
             <div class="card-body">
 
               <form class="form-inline">
                 {% csrf_token %}
-
-                <!-- <div class="form-group mb-2">
-                  <label>Select Store: </label>
-                  <input class="form-control" type="text" id="store" name="store">
-                </div> -->
-                <label>Store: </label>
+                <!-- <label>Store: </label>
                 <select class="form-select" id="select_store">
                   {% for store in stores %}
                   <option value="{{store.store_name}}" >{{store.store_name}}</option>
                   {% endfor %}
-                </select>
-
-                <label>Category: </label>
-                <select class="form-select" id="select_category">
-                  <option selected>All</option>
-                  {% for category in categories %}
-                  <option value="{{category.name}}">{{category.name}}</option>
-                  {% endfor %}
-                </select>
+                </select> -->
 
                 <div class="form-group mb-2">
-                  <label>Date: </label>
-                  <input class="form-control" type="date" id="date" name="date">
+                  <label>Minimum date: </label>
+                  <input class="form-control" type="date" id="min" name="min">
                 </div>
+
+                <div class="form-group mb-2">
+                  <label>Maximum date: </label>
+                  <input class="form-control" type="date" id="max" name="min">
+                </div>
+
                 <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter" style="background-color: #337ab7;">
                 
               </form>
 
-              <table id="veg_price_table" class="table table-bordered table-hover">
+              <table id="new_user_report" class="table table-bordered table-hover">
                 <thead>
                   <tr class="text-center">
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Basic qty</th>
-                    <th>Basic Price</th>
+                    <th>User ID</th>
+                    <th>User Name</th>
+                    <th>User Email</th>
+                    <th>User Phone</th>
+                    <th>Date and Time</th>
+                    <th>Sign Type</th>
+                    <th>Verify</th>
+                    <th>Order Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {% for veg in vegitables %}
+                  {% for user in user_data %}
 
                   <tr class="text-center">
 
-                    <td>{{veg.veg_price_veg_id}}</td>
-                    <td>{{veg.veg_price_veg_id__veg_name}}</td>
-                    <td>{{veg.veg_price_veg_id__veg_min_qty}}</td>
-                    <td>{{veg.veg_price_basic_rate}}</td>
+                    <td>{{user.user_id}}</td>
+                    <td>{{user.user_name}}</td>
+                    <td>{{user.user_email}}</td>
+                    <td>{{user.user_phone}}</td>
+                    <td>{{user.user_signup_date}}</td>
+                    <td>{{user.user_registration_type}}</td>
+                    <td>{{user.user_email_verified}}</td>
+                    <td>{{user.user_email_verified}}</td>
 
                   </tr>
                   {% endfor %}
@@ -167,33 +168,44 @@
 
 
   $('#btn_filter').click(function () {
-    var store = $('#select_store option:selected').text();
-    var category = $('#select_category option:selected').text();
-    var date = $('#date').val();
+
+    var min = $('#min').val();
+    var max = $('#max').val();
+    // var store = $('#select_store option:selected').text();
+
       // disable button
       $(this).prop("disabled", true);
       // add loading to button
       $(this).val('loading...');
-      $.ajax({
+
+    $.ajax({
       method: 'POST',
-      url: '/filter_vegitble/',
+      url: '/filter_newUser/',
       data: {
-        "store": store,
-        "min":min,
-        "max":max,
+        "min": min,
+        "max": max,
+        // 'store':store,
         'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
       },
       datatype: "json",
 
       success: function (response) {
-        data = response.filtered_vegData;
-          console.log(data);
-        $('#veg_price_table').DataTable().clear().destroy();
+        data = response.user_data;
+        console.log(data);
+        $('#new_user_report').DataTable().clear().destroy();
         var trHTML = '';
         $.each(data, function (i, item) {
-          trHTML += '<tr class="text-center"><td>' + item.veg_price_veg_id + '</td><td>' + item.veg_price_veg_id__veg_name + '</td><td>' + item.veg_price_veg_id__veg_min_qty + '</td><td>' + item.veg_price_basic_rate +'</td></tr>';
+          trHTML += '<tr class="text-center"><td>' 
+            + item.user_id + '</td><td>' 
+              + item.user_name + '</td><td>' 
+                + item.user_email + '</td><td>' 
+                  + item.user_phone + '</td><td>' 
+                    + item.user_signup_date + '</td><td>' 
+                      + item.user_registration_type + '</td><td>' 
+                        + item.user_email_verified + '</td><td>' 
+                          + item.user_email_verified + '</td></tr>';
         });
-        $('#veg_price_table').append(trHTML);
+        $('#new_user_report').append(trHTML);
 
         loadDataTable()
         $('#btn_filter').prop("disabled", false);

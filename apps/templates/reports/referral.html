@@ -31,59 +31,50 @@
             </div>
             <!-- /.card-header -->
             <div class="d-flex p-3 rounded d-flex justify-content-center text-white" style="background-color: #1fa67a;">
-              <h3 class="font-weight-bold">Vegitable Price Report</h3>
+              <h3 class="font-weight-bold">Referrals</h3>
             </div>
 
             <div class="card-body">
+                <form class="form-inline">
+                    {% csrf_token %}
+    
+                    <div class="form-group mb-2">
+                      <label>Minimum date: </label>
+                      <input class="form-control" type="date" id="min" name="min">
+                    </div>
+                    <div class="form-group mb-2">
+                      <label>Maximum date: </label>
+                      <input class="form-control" type="date" id="max" name="min">
+                    </div>
+                    <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter" style="background-color: #337ab7;">
+                    
+                  </form>
 
-              <form class="form-inline">
-                {% csrf_token %}
-
-                <!-- <div class="form-group mb-2">
-                  <label>Select Store: </label>
-                  <input class="form-control" type="text" id="store" name="store">
-                </div> -->
-                <label>Store: </label>
-                <select class="form-select" id="select_store">
-                  {% for store in stores %}
-                  <option value="{{store.store_name}}" >{{store.store_name}}</option>
-                  {% endfor %}
-                </select>
-
-                <label>Category: </label>
-                <select class="form-select" id="select_category">
-                  <option selected>All</option>
-                  {% for category in categories %}
-                  <option value="{{category.name}}">{{category.name}}</option>
-                  {% endfor %}
-                </select>
-
-                <div class="form-group mb-2">
-                  <label>Date: </label>
-                  <input class="form-control" type="date" id="date" name="date">
-                </div>
-                <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter" style="background-color: #337ab7;">
-                
-              </form>
-
-              <table id="veg_price_table" class="table table-bordered table-hover">
+              <table id="referrals_table" class="table table-bordered table-hover">
                 <thead>
                   <tr class="text-center">
                     <th>ID</th>
-                    <th>Name</th>
-                    <th>Basic qty</th>
-                    <th>Basic Price</th>
+                    <th>User Name</th>
+                    <th>Referred User</th>
+                    <th>Signed Up Date</th>
+                    <th>Ordered Date</th>
+                    <th>Referral Status</th>
+                    <th>Action</th>
+
                   </tr>
                 </thead>
                 <tbody>
-                  {% for veg in vegitables %}
+                  {% for data in referral_data %}
 
                   <tr class="text-center">
 
-                    <td>{{veg.veg_price_veg_id}}</td>
-                    <td>{{veg.veg_price_veg_id__veg_name}}</td>
-                    <td>{{veg.veg_price_veg_id__veg_min_qty}}</td>
-                    <td>{{veg.veg_price_basic_rate}}</td>
+                    <td>{{data.id}}</td>
+                    <td>{{data.user_id__user_name}}</td>
+                    <td>{{data.user_referral_id__user_name}}</td>
+                    <td>{{data.referral_date}}</td>
+                    <td>{{data.order_id__order_date}}</td>
+                    <td>{{data.active_refferal}}</td>
+                    <td></td>
 
                   </tr>
                   {% endfor %}
@@ -110,10 +101,9 @@
 </section>
 <!-- /.content -->
 </div>
-
-<div class="loader-wrapper">
-  <span class="loader"><span class="loader-inner"></span></span>
-</div>
+  <div class="loader-wrapper">
+    <span class="loader"><span class="loader-inner"></span></span>
+  </div>
 {% endblock content %}
 
 
@@ -141,10 +131,9 @@
 <!-- page script -->
 
 <script>
-        $(window).on("load",function(){
+      $(window).on("load",function(){
     $(".loader-wrapper").fadeOut("slow");
   });
-  
 
  $(function () {
     loadDataTable()
@@ -152,7 +141,7 @@
 
 
   function loadDataTable() {
-    $("#veg_price_table").DataTable({
+    $("#referrals_table").DataTable({
       dom: 'Bfrtip',
       buttons: [
         'copy', 'csv', 'excel', 'pdf', 'print'
@@ -166,37 +155,38 @@
   }
 
 
+
   $('#btn_filter').click(function () {
-    var store = $('#select_store option:selected').text();
-    var category = $('#select_category option:selected').text();
-    var date = $('#date').val();
+    var min = $('#min').val();
+    var max = $('#max').val();
       // disable button
       $(this).prop("disabled", true);
       // add loading to button
       $(this).val('loading...');
-      $.ajax({
+
+    $.ajax({
       method: 'POST',
-      url: '/filter_vegitble/',
+      url: '/filter_referrals/',
       data: {
-        "store": store,
-        "min":min,
-        "max":max,
+        "min": min,
+        "max": max,
         'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
       },
       datatype: "json",
 
       success: function (response) {
-        data = response.filtered_vegData;
-          console.log(data);
-        $('#veg_price_table').DataTable().clear().destroy();
+        console.log(response);
+        data = response.referral_data;
+        $('#referrals_table').DataTable().clear().destroy();
         var trHTML = '';
         $.each(data, function (i, item) {
-          trHTML += '<tr class="text-center"><td>' + item.veg_price_veg_id + '</td><td>' + item.veg_price_veg_id__veg_name + '</td><td>' + item.veg_price_veg_id__veg_min_qty + '</td><td>' + item.veg_price_basic_rate +'</td></tr>';
+          trHTML += '<tr class="text-center"><td>' + item.id + '</td><td>' + item.user_id__user_name + '</td><td>' + item.user_referral_id__user_name + '</td><td>' + item.referral_date + '</td><td>' + item.order_id__order_date +  '</td><td>' + item.active_refferal + '</td></tr>';
         });
-        $('#veg_price_table').append(trHTML);
+        $('#referrals_table').append(trHTML);
 
         loadDataTable()
         $('#btn_filter').prop("disabled", false);
+        alert('ok')
         $('#btn_filter').val('Filter');
 
       }

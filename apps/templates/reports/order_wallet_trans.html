@@ -1,0 +1,375 @@
+{% extends "layouts/base.html" %}
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- DataTables -->
+<link rel="stylesheet" href="  https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css  ">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css  ">
+<link rel="stylesheet" href="/static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/css/loader.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+
+<div class="content-wrapper mt-5">
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="d-flex p-3 rounded d-flex justify-content-center text-white"
+                            style="background-color: #1fa67a;">
+                            <h3 class="font-weight-bold">Order Wallet Transactions Report</h3>
+                        </div>
+
+                        <form class="form-inline">
+                            {% csrf_token %}
+
+                            <div class="form-group mb-2">
+                                <label>Minimum date: </label>
+                                <input class="form-control" type="date" id="min" name="min">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label>Maximum date: </label>
+                                <input class="form-control" type="date" id="max" name="min">
+                            </div>
+                            <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter"
+                                style="background-color: #337ab7;">
+
+                        </form>
+
+                        <div class="row">
+                            <div class="col">
+
+                                <div class="container d-flex justify-container-center">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="piechart3d" style="width: 900px; height: 500px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col">
+                                <table id="short_table" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr class="text-center">
+                                            <th>No</th>
+                                            <th>Name</th>
+                                            <th>Number Of Transactions</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                        <tr class="text-center">
+                                            <td></td>
+                                            <td id="person_email">{{all_data.person_email}}</td>
+                                            <td id="person_transactions">{{all_data.person_transactions}}</td>
+                                            <td id="person_amount">{{all_data.person_amount}}</td>
+                                        </tr>
+                                        
+                                        <tr class="text-center">
+                                            <td></td>
+                                            <td>Others</td>
+                                            <td id="other_transactions">{{all_data.other_transactions}}</td>
+                                            <td id="other_amount">{{all_data.other_amount}}</td>
+                                        </tr>
+                                            
+
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col ">
+                                <div class="card ">
+                                    <div class="card-header text-white" style="background: #1fa67a; ">
+                                        Total Credit
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title"  id="card_credit">{{all_data.credit}}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card">
+                                    <div class="card-header text-white" style="background: #1fa67a;">
+                                        Total Debit
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title" id="card_debit">{{all_data.debit}}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card">
+                                    <div class="card-header text-white" style="background: #1fa67a;">
+                                        Total Refund
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title" id="card_refund">{{all_data.refund}}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card">
+                                    <div class="card-header text-white" style="background: #1fa67a;">
+                                        Total Amount
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title" id="card_total">{{all_data.total}}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+
+
+                            <table id="order_wallet_trans" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th>SL No</th>
+                                        <th>User ID</th>
+                                        <th>Created By</th>
+                                        <th>Order ID</th>
+                                        <th>Order Date</th>
+                                        <th>Trans Time</th>
+                                        <th>Reason</th>
+                                        <th>Note</th>
+                                        <th>Tr Type</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for data in order_wallet_data %}
+
+                                    <tr class="text-center">
+
+                                        <td>{{data.wallet_trans_id}}</td>
+                                        <td>{{data.wallet_trans_user_id}}</td>
+                                        <td>{{data.wallet_trans_user_id__user_email}}</td>
+                                        <td>{{data.wallet_trans_placed_order_id}}</td>
+                                        <td>{{data.wallet_trans_placed_order_id__placed_order_date}}</td>
+                                        <td>{{data.wallet_trans_time}}</td>
+                                        <td>{{data.wallet_trans_id__reson}}</td>
+                                        <td>{{data.wallet_trans_message}}</td>
+                                        <td>{{data.wallet_trans_status}}</td>
+                                        <td>{{data.wallet_trans_amount}}</td>
+
+                                    </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.row -->
+</div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+<div class="loader-wrapper">
+    <span class="loader"><span class="loader-inner"></span></span>
+</div>
+{% endblock content %}
+
+
+
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script> -->
+<!-- jQuery -->
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables -->
+<script src="/static/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js  "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js  "></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js  "></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js  "></script>
+
+<!-- page script -->
+
+<script>
+    $(window).on("load",function(){
+    $(".loader-wrapper").fadeOut("slow");
+    });
+
+    $(function () {
+        loadDataTable()
+    });
+
+
+    function loadDataTable() {
+        $("#order_wallet_trans").DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ],
+            "scrollY": "500px",
+            "responsive": true,
+            "searching": true,
+
+            "autoWidth": false,
+        });
+    }
+
+
+    $('#btn_filter').click(function () {
+        var min = $('#min').val();
+        var max = $('#max').val();
+        // disable button
+        $(this).prop("disabled", true);
+        // add loading to button
+        $(this).val('loading...');
+
+        $.ajax({
+            method: 'POST',
+            url: '/filter_order_wallet/',
+            data: {
+                "min": min,
+                "max": max,
+                'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
+            },
+            datatype: "json",
+
+            success: function (response) {
+                data = response.order_wallet_data;
+                all_data=response.all_data;
+                // billing_error=response.billing_error.billing_error_count;
+                // god_will=response.god_will.god_will_count;
+                // system=response.system.system_count;
+                // console.log(billing_error);
+                
+                $('#card_credit').text(all_data['credit'])
+                $('#card_debit').text(all_data['debit'])
+                $('#card_refund').text(all_data['refund'])
+                $('#card_total').text(all_data['total'])
+                $('#person_email').text(all_data['person_email'])
+                $('#person_transactions').text(all_data['person_transactions'])
+                $('#person_amount').text(all_data['person_amount'])
+                $('#other_transactions').text(all_data['other_transactions'])
+                $('#other_amount').text(all_data['other_amount'])
+                
+                    
+                $('#order_wallet_trans').DataTable().clear().destroy();
+                var trHTML = '';
+                $.each(data, function (i, item) {
+                    trHTML += '<tr class="text-center"><td>'
+                        + item.wallet_trans_id + '</td><td>'
+                        + item.wallet_trans_user_id + '</td><td>'
+                        + item.wallet_trans_user_id__user_email + '</td><td>'
+                        + item.wallet_trans_placed_order_id + '</td><td>'
+                        + item.wallet_trans_placed_order_id__placed_order_date + '</td><td>'
+                        + item.wallet_trans_time + '</td><td>'
+                        + item.wallet_trans_message + '</td><td>'
+                        + item.wallet_trans_status + '</td><td>'
+                        + item.wallet_trans_amount + '</td></tr>';
+                });
+                $('#order_wallet_trans').append(trHTML);
+                $('#btn_filter').prop("disabled", false);
+                $('#btn_filter').val('Filter');
+                loadDataTable()
+
+               
+                // var data = google.visualization.arrayToDataTable([
+                //         ['Task', 'Hours per Day'],
+                //         ['Biling Error', billing_error],
+                //         ['God Will', god_will],
+                //         ['System', 0],
+                //     ]);
+                // var options = {
+                //     title: 'Wallet Transaction Reason',
+                //     is3D: true
+                // };
+                // var chart = new google.visualization.PieChart(document.getElementById('piechart3d'));
+
+                // chart.draw(data, options);
+
+            }
+        })
+    })
+
+
+    $(document).ready(function () {
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            $.ajax({
+                method: 'GET',
+                url: '/wallet_piechart/',
+                datatype: "json",
+
+                success: function (response) {
+                    var billing_error=response.billing_error.billing_error_count;
+                    var god_will=response.god_will.god_will_count;
+                    var system=response.system.system_count;
+                    console.log(system);
+                    var data = google.visualization.arrayToDataTable([
+                        ['Task', 'Hours per Day'],
+                        ['Biling Error', billing_error],
+                        ['God Will', god_will],
+                        ['System', system],
+
+                    ]);
+                    var options = {
+                        title: 'Wallet Transaction Reason',
+                        is3D: true
+                    };
+
+                    var chart = new google.visualization.PieChart(document.getElementById('piechart3d'));
+
+                    chart.draw(data, options);
+                }
+
+            })
+
+        }
+
+
+
+
+
+
+    });
+
+</script>
+{% endblock javascripts %}

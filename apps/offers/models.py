@@ -51,21 +51,21 @@ class UserPromos(models.Model):
 
 class UserReferral(models.Model):
     id = models.AutoField(primary_key=True)
-    user_id = models.IntegerField()
-    order_id = models.CharField(max_length=50, null=True)
-    user_referral_id = models.CharField(max_length=110)
-    active_refferal = models.CharField(max_length=1, default=0)
-    referal_cashback_child = models.DecimalField(
-        decimal_places=2, max_digits=10, null=True, default=None)
-    referral_cashback_parent = models.DecimalField(
-        decimal_places=2, max_digits=10, null=True, default=None)
-    referral_date = models.DateTimeField(auto_now=True)
+#     user_id = models.IntegerField()
+#     order_id = models.CharField(max_length=50, null=True)
+#     user_referral_id = models.CharField(max_length=110)
+#     active_refferal = models.CharField(max_length=1, default=0)
+#     referal_cashback_child = models.DecimalField(
+#         decimal_places=2, max_digits=10, null=True, default=None)
+#     referral_cashback_parent = models.DecimalField(
+#         decimal_places=2, max_digits=10, null=True, default=None)
+#     referral_date = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        db_table = "ffz_user_referral"
+#     class Meta:
+#         db_table = "ffz_user_referral"
 
-    def __str__(self):
-        return str(self.id)
+#     def __str__(self):
+#         return str(self.id)
 
 
 class UserCashback(models.Model):

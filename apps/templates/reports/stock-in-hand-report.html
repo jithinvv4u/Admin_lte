@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css  ">
 <link rel="stylesheet" href="/static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/css/loader.css">
 
 {% endblock stylesheets %}
 
@@ -44,7 +45,7 @@
                 <label>Select Store : </label>
                 <select class="form-select" id="selected_store">
                   {% for store in stores %}
-                  <option value="{{store.store_name}}" selected>{{store.store_name}}</option>
+                  <option value="{{store.store_name}}">{{store.store_name}}</option>
                   {% endfor %}
                 </select>
 
@@ -95,12 +96,12 @@
                     <td>{{stock.veg_inventory_id}}</td>
                     <td>{{stock.veg_inventory_veg_id}}</td>
                     <td>{{stock.veg_inventory_veg_id__veg_name}}</td>
+                    <td>{{stock.audit_log_detail_qty}}</td>
+                    <td>{{stock.inventory_veg_qty}}</td>
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>{{stock.order_placed_id}}</td>
                     <td>{{stock.veg_inventory_stock_in_hand}}</td>
                     <td>{{stock.veg_inventory_veg_id__veg_basic_rate}}</td>
                     <td>{{stock.stock_total}}</td>
@@ -132,7 +133,9 @@
 </section>
 <!-- /.content -->
 </div>
-
+<div class="loader-wrapper">
+  <span class="loader"><span class="loader-inner"></span></span>
+</div>
 {% endblock content %}
 
 
@@ -160,6 +163,10 @@
 <!-- page script -->
 
 <script>
+  $(window).on("load",function(){
+  $(".loader-wrapper").fadeOut("slow");
+  });
+
   $(function () {
     loadDataTable()
   });
@@ -173,7 +180,7 @@
 
       "responsive": true,
       "searching": true,
-
+      "scrollY": "500px",
       "autoWidth": false,
     });
   }

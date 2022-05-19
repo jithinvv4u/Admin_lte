@@ -1,3 +1,4 @@
+from datetime import tzinfo
 from operator import mod
 from django.db import models
 
@@ -13,14 +14,32 @@ class ffz_category(models.Model):
 class ffz_store(models.Model):
     store_id=models.IntegerField(primary_key=True)
     store_name=models.CharField(max_length=45)
-    
+    store_is_mdc=models.IntegerField()
     class Meta:
         managed=False
         db_table='ffz_stores'
+    
+    def __str__(self):
+        return self.store_name
+    
+class ffz_main_city(models.Model):
+    id=models.IntegerField(primary_key=True)
+    name=models.CharField(max_length=45)
+    main_store_id=models.ForeignKey(ffz_store,on_delete=models.CASCADE,db_column='parent_store_id')
+    status=models.IntegerField()
+    
+    class Meta:
+        managed=False
+        db_table='ffz_main_city'
         
 class ffz_users(models.Model):
     user_id=models.IntegerField(primary_key=True)
     user_name=models.CharField(max_length=45)
+    user_email=models.CharField(max_length=45)
+    user_phone=models.IntegerField()
+    user_signup_date=models.DateTimeField()
+    user_registration_type=models.IntegerField()
+    user_email_verified=models.IntegerField()
     
     class Meta:
         managed=False
@@ -49,14 +68,14 @@ class ffz_orders(models.Model):
         on_delete=models.CASCADE,
         db_column='order_veg_id',
         )
-    
+    order_date=models.DateTimeField()
     class Meta:
         managed=False
         db_table='ffz_orders'
         
         
 class ffz_veg_price(models.Model):
-    veg_price_id=models.AutoField(primary_key=True)
+    veg_price_id=models.IntegerField(primary_key=True)
     veg_price_veg_id=models.ForeignKey(
         ffz_vegitables,
         on_delete=models.CASCADE,
@@ -123,27 +142,92 @@ class Notify(models.Model):
     class Meta:
         managed=False
         db_table='ffz_notify'
-   
 
-class ffz_wallet_trans(models.Model):
+class ffz_payment_status(models.Model):
+    payment_status_id=models.AutoField(primary_key=True)
+    payment_status_name=models.CharField(max_length=45)
+    
+    class Meta:
+        managed=False
+        db_table='payment_status'
+   
+class ffz_placed_orders(models.Model):
+    placed_order_id=models.AutoField(primary_key=True)
+    placed_order_date=models.DateTimeField(blank=True)
+    placed_order_delivery_date=models.DateField(blank=True)
+    placed_order_packed_time=models.DateTimeField(blank=True)
+    placed_order_price=models.FloatField(blank=True)
+    placed_order_shipping_charge=models.FloatField(blank=True)
+    placed_order_gst=models.FloatField(blank=True)
+    placed_order_packed_sum=models.FloatField(blank=True)
+    placed_order_wallet_amount=models.FloatField(blank=True)
+    placed_order_packed_wallet_adjustment=models.FloatField(blank=True)
+    placed_order_discount=models.FloatField()
+    placed_order_pq_total=models.FloatField()
+    placed_order_city_id=models.ForeignKey(
+        ffz_main_city,
+        on_delete=models.CASCADE,
+        db_column='placed_order_city_id'
+        )
+    placed_order_payment_status_id=models.ForeignKey(
+        ffz_payment_status,
+        on_delete=models.CASCADE,
+        db_column='placed_order_payment_status_id',blank=True)
+    placed_order_order_status_id=models.IntegerField(blank=True)
+    placed_order_type_id=models.IntegerField(blank=True)
+    placed_order_txtn_id=models.CharField(max_length=45)
+    placed_order_user_id=models.ForeignKey(
+        ffz_users,
+        on_delete=models.CASCADE,
+        db_column='placed_order_user_id',
+        blank=True
+        )
+    placed_order_store_id=models.ForeignKey(
+        ffz_store,
+        on_delete=models.CASCADE,
+        db_column='placed_order_store_id',
+        blank=True
+        )
+    
+    
+    class Meta:
+        managed=False
+        db_table='ffz_placed_orders'
+
+class ffz_wallet_trans_history(models.Model):
     wallet_trans_id=models.IntegerField(primary_key=True)
+    reson=models.CharField(max_length=45)
+    
+    class Meta:
+        managed=False
+        db_table='ffz_wallet_trans_history'
+        
+        
+class ffz_wallet_trans(models.Model):
+    wallet_trans_id=models.ForeignKey(
+        ffz_wallet_trans_history,
+        on_delete=models.CASCADE,
+        db_column='wallet_trans_id',
+        null=True,
+        )
     wallet_trans_user_id=models.ForeignKey(
         ffz_users,
         on_delete=models.CASCADE,
-        db_column='wallet_trans_user_id'
+        db_column='wallet_trans_user_id',
         )
-    wallet_trans_time=models.DateTimeField()
-    wallet_trans_placed_order_id=models.IntegerField()
-    wallet_trans_message=models.CharField(max_length=45)
-    wallet_trans_status=models.IntegerField()
-    wallet_trans_amount=models.FloatField()
+    wallet_trans_time=models.DateTimeField(null=True,)
+    wallet_trans_placed_order_id=models.ForeignKey(ffz_placed_orders,on_delete=models.CASCADE,db_column='wallet_trans_placed_order_id')
+    # wallet_trans_placed_order_id=models.IntegerField()
+    wallet_trans_message=models.CharField(max_length=45,null=True,)
+    wallet_trans_status=models.IntegerField(null=True,)
+    wallet_trans_amount=models.FloatField(null=True,)
     
     class Meta:
         managed=False
         db_table='ffz_wallet_trans'
     
 class ffz_audit_log_details(models.Model):
-    audit_log_detail_id=models.AutoField(primary_key=True)
+    audit_log_detail_id=models.IntegerField(primary_key=True)
     audit_log_detail_veg_id=models.ForeignKey(
         ffz_vegitables,
         on_delete=models.CASCADE,
@@ -187,6 +271,57 @@ class ffz_veg_inventory(models.Model):
         db_table='ffz_veg_inventory'
     
 
+class ffz_user_referral(models.Model):
+    id=models.IntegerField(primary_key=True)
+    user_id=models.ForeignKey(ffz_users,on_delete=models.CASCADE,db_column='user_id',related_name='user')
+    order_id=models.ForeignKey(ffz_orders,on_delete=models.CASCADE,db_column='order_id')
+    user_referral_id=models.ForeignKey(ffz_users,on_delete=models.CASCADE,db_column='user_referral_id',related_name='referred_user')
+    active_refferal=models.IntegerField()
+    referral_date=models.DateTimeField()
+    
+    class Meta:
+        managed:False
+        db_table='ffz_user_referral'
+        
+        
+class ffz_razor_payment_history(models.Model):
+    id=models.IntegerField(primary_key=True)
+    razor_order_placed_id=models.ForeignKey(
+        ffz_placed_orders,
+        on_delete=models.CASCADE,
+        db_column='razor_order_placed_id',
+        related_name='razorpayment_history'
+        )
+    razor_payment_id=models.IntegerField()
+    
+    class Meta:
+        managed=False
+        db_table='ffz_razor_payment_history'
+
+class ffz_transaction_before(models.Model):
+    bf_id=models.AutoField(primary_key=True)
+    bf_user_id=models.ForeignKey(
+        ffz_users,
+        on_delete=models.CASCADE,
+        db_column='bf_user_id'
+        )
+    bf_amount=models.FloatField()
+    
+    class Meta:
+        managed=False
+        db_table='ffz_transaction_before'
+
+# class ffz_wallet_trans_history(models.Model):
+#     wallet_trans_id=models.IntegerField(primary_key=True)
+#     reason=models.CharField(max_length=45)
+    
+#     class Meta:
+#         managed=False
+#         db_table='ffz_wallet_trans_history'
+
+        
+    
+    
 # class ffz_veg_measurement(models.Model):
 #     veg_measurement_id=models.IntegerField(primary_key=True)
 #     veg_measurement_name=models.CharField(max_length=45)
