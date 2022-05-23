@@ -1,7 +1,8 @@
 from datetime import tzinfo
 from operator import mod
 from django.db import models
-
+from datetime import datetime
+# import datetime
 # Create your models here. 
 class ffz_category(models.Model):
     id=models.IntegerField(primary_key=True)
@@ -143,6 +144,7 @@ class Notify(models.Model):
         managed=False
         db_table='ffz_notify'
 
+
 class ffz_payment_status(models.Model):
     payment_status_id=models.AutoField(primary_key=True)
     payment_status_name=models.CharField(max_length=45)
@@ -150,7 +152,17 @@ class ffz_payment_status(models.Model):
     class Meta:
         managed=False
         db_table='payment_status'
-   
+
+class placedOrderManager(models.Manager):
+    
+    def delivery_date_filter(self,start_date,end_date):
+        items = []
+        for obj in self.all():
+            if datetime.strptime(obj.placed_order_delivery_date,'%Y-%m-%d') < end_date and datetime.strptime(obj.placed_order_delivery_date,'%Y-%m-%d') > start_date:
+                items.append(obj)
+        return items
+
+
 class ffz_placed_orders(models.Model):
     placed_order_id=models.AutoField(primary_key=True)
     placed_order_date=models.DateTimeField(blank=True)
@@ -164,6 +176,7 @@ class ffz_placed_orders(models.Model):
     placed_order_packed_wallet_adjustment=models.FloatField(blank=True)
     placed_order_discount=models.FloatField()
     placed_order_pq_total=models.FloatField()
+    placed_order_order_status_id=models.CharField(max_length=45)
     placed_order_city_id=models.ForeignKey(
         ffz_main_city,
         on_delete=models.CASCADE,
@@ -188,11 +201,14 @@ class ffz_placed_orders(models.Model):
         db_column='placed_order_store_id',
         blank=True
         )
-    
+    objects=placedOrderManager()
     
     class Meta:
         managed=False
         db_table='ffz_placed_orders'
+
+
+
 
 class ffz_wallet_trans_history(models.Model):
     wallet_trans_id=models.IntegerField(primary_key=True)

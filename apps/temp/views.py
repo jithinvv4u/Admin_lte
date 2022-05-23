@@ -2,8 +2,6 @@ from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from .models import ffz_vegitables,ffz_category
-import pandas as pd
-from pandas import DataFrame
 # Create your views here.
 
 def vegitableView(request):

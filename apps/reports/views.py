@@ -3,8 +3,9 @@ from django.shortcuts import render
 from .models import ffz_inventory_log, ffz_main_city, ffz_orders, ffz_packed, ffz_placed_orders, ffz_razor_payment_history, ffz_store, ffz_audit_log_details, ffz_category, ffz_transaction_before, ffz_user_referral, ffz_users, ffz_veg_inventory, ffz_veg_price, ffz_vegitables, Notify, ffz_wallet_trans, ffz_wallet_trans_history
 from django.db.models import Count, Max, Sum
 from django.db.models import F
-import json
-
+from django.db.models import Q
+from django.utils.dateparse import parse_date
+import datetime
 
 def notify_report_view(request):
     notify_report = Notify.objects.values(
@@ -561,16 +562,45 @@ def settlement_report(request):
             'placed_order_discount',
             'placed_order_pq_total')
 
-        wallet_amount_data=[data['placed_order_wallet_amount'] for data in settlement_data]
-        for data in wallet_amount_data:
-            if data==None:
+        
+        sum_used_credit=0
+        sum_used_debit=0
+        for data in settlement_data:
+            data['wallet_used_credit'], data['wallet_used_debit'] = 0, 0
+            if data['placed_order_wallet_amount']==None:
                 pass
-            elif data<0:
-                # data.update({'wallet_adjustment_debit':data})
-                print('debit')
+            elif data['placed_order_wallet_amount']<0:
+                data['wallet_used_debit'] = data['placed_order_wallet_amount']
             else:
-                # data.update({'wallet_adjustment_credit':wallet_adjst_data})
-                print('credit')
+                data['wallet_used_credit'] = data['placed_order_wallet_amount']
+            sum_used_credit+=data['wallet_used_credit']
+            sum_used_debit+=data['wallet_used_debit']
+            
+        sum_adjst_credit=0
+        sum_adjst_debit=0
+        for data in settlement_data:
+            data['wallet_adjst_credit'], data['wallet_adjst_debit'] = 0, 0
+            if data['placed_order_packed_wallet_adjustment']==None:
+                pass
+            elif data['placed_order_packed_wallet_adjustment']<0:
+                data['wallet_adjst_debit'] = data['placed_order_packed_wallet_adjustment']
+            else:
+                data['wallet_adjst_credit'] = data['placed_order_packed_wallet_adjustment']
+            sum_adjst_credit+=data['wallet_adjst_credit']
+            sum_adjst_debit+=data['wallet_adjst_debit']
+            
+        sum_by_cash=0
+        for data in settlement_data:
+            if data['placed_order_payment_status_id__payment_status_name']=='COD':
+                if data['placed_order_packed_sum'] and data['placed_order_shipping_charge']:
+                    data['by_cash']=data['placed_order_shipping_charge']+data['placed_order_packed_sum'] 
+                elif data['placed_order_packed_sum']:
+                    data['by_cash']=data['placed_order_packed_sum']
+                elif data['placed_order_shipping_charge']:
+                    data['by_cash']=data['placed_order_shipping_charge'] 
+                else:             
+                    data['by_cash']=0
+                sum_by_cash+=data['by_cash']
         
         online_credited = 0
         user_ids = [data['placed_order_user_id'] for data in settlement_data]
@@ -597,7 +627,6 @@ def settlement_report(request):
             if razor_pay_id:
                 data.update(
                     {'razor_payment_id': razor_pay_id[0]['razor_payment_id']})
-
 
         # user_ids=[data['placed_order_user_id'] for data in settlement_data]
         # walllet_debited_details=ffz_wallet_trans.objects.filter(
@@ -656,9 +685,6 @@ def settlement_report(request):
             placed_order_date__gt='2022-03-08',
             placed_order_date__lt='2022-04-08',).aggregate(placed_order_pq_total=Sum('placed_order_pq_total'))
 
-        by_cash = ffz_placed_orders.objects.filter(placed_order_payment_status_id=1).annotate(
-            bycash=F('placed_order_shipping_charge') + F('placed_order_packed_sum')).values_list('bycash')
-
         sum_data = {}
         sum_data['sub_total'] = sum_sub_total['sub_total']
         sum_data['shipping'] = sum_shipping['shipping']
@@ -667,13 +693,20 @@ def settlement_report(request):
         sum_data['placed_order_pq_total'] = sum_pq['placed_order_pq_total']
         sum_data['online_credited'] = online_credited
         sum_data['gst'] = sum_gst['gst_sum']
+        sum_data['sum_by_Cash']=sum_by_cash
+        sum_data['sum_used_credit']=sum_used_credit
+        sum_data['sum_used_debit']=sum_used_debit
+        sum_data['sum_adjst_credit']=sum_adjst_credit
+        sum_data['sum_adjst_debit']=sum_adjst_debit
         
+        # delivery_date=ffz_placed_orders.objects.values('placed_order_delivery_date')
+        # print(delivery_date)
         
         stores = ffz_store.objects.filter(store_is_mdc=1).values('store_name')
 
         cities = ffz_main_city.objects.filter(
             main_store_id__store_name='Kakkanad',status=1).values('name')
-        print(cities)
+
         return render(
             request,
             'reports/settlement_report.html',
@@ -695,100 +728,113 @@ def getfilterSettlement(request):
         min = request.POST.get('min')
         max = request.POST.get('max')
         
-        if city=='All':
-            if date_filter == 'Delivery Date':
-                settlement_data = ffz_placed_orders.objects.filter(
-                    placed_order_store_id__store_name=store,
-                    placed_order_delivery_date__gt=min,
-                    placed_order_delivery_date__lt=max,
-                ).values('placed_order_user_id',
-                    'placed_order_user_id__user_name',
-                    'placed_order_id',
-                    'placed_order_date',
-                    'placed_order_delivery_date',
-                    'placed_order_packed_time',
-                    'placed_order_price',
-                    'placed_order_shipping_charge',
-                    'placed_order_gst',
-                    'placed_order_packed_sum',
-                    'placed_order_wallet_amount',
-                    'placed_order_packed_wallet_adjustment',
-                    'placed_order_payment_status_id__payment_status_name',
-                    'placed_order_order_status_id',
-                    'placed_order_txtn_id',
-                    'placed_order_store_id',
-                )
-            elif date_filter == 'Order Date':
-                settlement_data = ffz_placed_orders.objects.filter(
-                    placed_order_store_id__store_name=store,
-                    placed_order_date__gt=min,
-                    placed_order_date__lt=max,
-                ).values(
-                    'placed_order_user_id',
-                    'placed_order_user_id__user_name',
-                    'placed_order_id',
-                    'placed_order_date',
-                    'placed_order_delivery_date',
-                    'placed_order_packed_time',
-                    'placed_order_price',
-                    'placed_order_shipping_charge',
-                    'placed_order_gst',
-                    'placed_order_packed_sum',
-                    'placed_order_wallet_amount',
-                    'placed_order_packed_wallet_adjustment',
-                    'placed_order_payment_status_id__payment_status_name',
-                    'placed_order_order_status_id',
-                    'placed_order_txtn_id',
-                    'placed_order_store_id',
-                )
+        # date_data=ffz_placed_orders.objects.delivery_date_filter(min,max)
+        # print(date_data)
+        
+        settlement_filters = {
+            'placed_order_store_id__store_name': store
+        }
+        if date_filter == 'Delivery Date':
+            # date_list=[]
+            # all_delivery_dates=ffz_placed_orders.objects.values('placed_order_delivery_date')
+            # print(all_delivery_dates['placed_order_delivery_date'])
+            # for date in all_delivery_dates:
+            #     to_date=parse_date(date)
+            #     date_list.append(to_date)
+            # print(date_list)
+      
+            # date=ffz_placed_orders.objects.filter(placed_order_delivery_date__gt=min,placed_order_delivery_date__lt=max)
+            # print(date)
+            # settlement_filters.update({
+            #     'placed_order_delivery_date__gt': min,
+            #     'placed_order_delivery_date__lt': max,
+            # })
+            
+            pass
+            
         else:
-            if date_filter == 'Delivery Date':
-                settlement_data = ffz_placed_orders.objects.filter(
-                    placed_order_store_id__store_name=store,
-                    placed_order_city_id__name=city,
-                    placed_order_delivery_date__gt=min,
-                    placed_order_delivery_date__lt=max,
-                ).values('placed_order_user_id',
-                    'placed_order_user_id__user_name',
-                    'placed_order_id',
-                    'placed_order_date',
-                    'placed_order_delivery_date',
-                    'placed_order_packed_time',
-                    'placed_order_price',
-                    'placed_order_shipping_charge',
-                    'placed_order_gst',
-                    'placed_order_packed_sum',
-                    'placed_order_wallet_amount',
-                    'placed_order_packed_wallet_adjustment',
-                    'placed_order_payment_status_id__payment_status_name',
-                    'placed_order_order_status_id',
-                    'placed_order_txtn_id',
-                    'placed_order_store_id',
-                )
-            elif date_filter == 'Order Date':
-                settlement_data = ffz_placed_orders.objects.filter(
-                    placed_order_store_id__store_name=store,
-                    placed_order_city_id__name=city,
-                    placed_order_date__gt=min,
-                    placed_order_date__lt=max,
+            print('placed order date')
+            settlement_filters.update({
+                'placed_order_date__gt': min,
+                'placed_order_date__lt': max 
+            })
+        if order_type=='Cancelled':
+            settlement_filters.update({
+                'placed_order_order_status_id':4,
+            })
+        elif order_type=='Active':
+            settlement_filters.update({
+                'placed_order_order_status_id__lt':4,
+            })
+        else:
+            pass
+        if city != 'All':
+            print(city)
+            settlement_filters.update({'placed_order_city_id__name': city})
+            
+        settlement_data = ffz_placed_orders.objects.filter(
+                    Q(**settlement_filters)
                 ).values(
-                    'placed_order_user_id',
-                    'placed_order_user_id__user_name',
-                    'placed_order_id',
-                    'placed_order_date',
-                    'placed_order_delivery_date',
-                    'placed_order_packed_time',
-                    'placed_order_price',
-                    'placed_order_shipping_charge',
-                    'placed_order_gst',
-                    'placed_order_packed_sum',
-                    'placed_order_wallet_amount',
-                    'placed_order_packed_wallet_adjustment',
-                    'placed_order_payment_status_id__payment_status_name',
-                    'placed_order_order_status_id',
-                    'placed_order_txtn_id',
-                    'placed_order_store_id',
-                )          
+            'placed_order_user_id',
+            'placed_order_user_id__user_name',
+            'placed_order_id',
+            'placed_order_date',
+            'placed_order_delivery_date',
+            'placed_order_packed_time',
+            'placed_order_price',
+            'placed_order_shipping_charge',
+            'placed_order_gst',
+            'placed_order_packed_sum',
+            'placed_order_wallet_amount',
+            'placed_order_packed_wallet_adjustment',
+            'placed_order_payment_status_id__payment_status_name',
+            'placed_order_order_status_id',
+            'placed_order_type_id',
+            'placed_order_txtn_id',
+            'placed_order_store_id',
+            'placed_order_discount',
+            'placed_order_pq_total')
+        
+        sum_used_credit=0
+        sum_used_debit=0
+        for data in settlement_data:
+            data['wallet_used_credit'], data['wallet_used_debit'] = 0, 0
+            if data['placed_order_wallet_amount']==None:
+                pass
+            elif data['placed_order_wallet_amount']<0:
+                data['wallet_used_debit'] = data['placed_order_wallet_amount']
+            else:
+                data['wallet_used_credit'] = data['placed_order_wallet_amount']
+            sum_used_credit+=data['wallet_used_credit']
+            sum_used_debit+=data['wallet_used_debit']
+            
+        sum_adjst_credit=0
+        sum_adjst_debit=0
+        for data in settlement_data:
+            data['wallet_adjst_credit'], data['wallet_adjst_debit'] = 0, 0
+            if data['placed_order_packed_wallet_adjustment']==None:
+                pass
+            elif data['placed_order_packed_wallet_adjustment']<0:
+                data['wallet_adjst_debit'] = data['placed_order_packed_wallet_adjustment']
+            else:
+                data['wallet_adjst_credit'] = data['placed_order_packed_wallet_adjustment']
+            sum_adjst_credit+=data['wallet_adjst_credit']
+            sum_adjst_debit+=data['wallet_adjst_debit']
+            
+        sum_by_cash=0
+        for data in settlement_data:
+            if data['placed_order_payment_status_id__payment_status_name']=='COD':
+                if data['placed_order_packed_sum'] and data['placed_order_shipping_charge']:
+                    data['by_cash']=data['placed_order_shipping_charge']+data['placed_order_packed_sum'] 
+                elif data['placed_order_packed_sum']:
+                    data['by_cash']=data['placed_order_packed_sum']
+                elif data['placed_order_shipping_charge']:
+                    data['by_cash']=data['placed_order_shipping_charge'] 
+                else:             
+                    data['by_cash']=0
+                sum_by_cash+=data['by_cash']
+        
+        
         placed_ids = [data['placed_order_id'] for data in settlement_data]
         razorpay_details = ffz_razor_payment_history.objects.filter(
             razor_order_placed_id__in=placed_ids).values(
@@ -818,6 +864,10 @@ def getfilterSettlement(request):
             placed_order_store_id__store_name=store,
             placed_order_date__gt=min,
             placed_order_date__lt=max,).aggregate(sub_total=Sum('placed_order_price'))
+        sum_discount = ffz_placed_orders.objects.filter(
+            placed_order_store_id__store_name=store,
+            placed_order_date__gt=min,
+            placed_order_date__lt=max,).aggregate(discount=Sum('placed_order_discount'))
         sum_shipping = ffz_placed_orders.objects.filter(
             placed_order_store_id__store_name=store,
             placed_order_date__gt=min,
@@ -830,26 +880,10 @@ def getfilterSettlement(request):
             placed_order_store_id__store_name=store,
             placed_order_date__gt=min,
             placed_order_date__lt=max,).aggregate(packed_sum=Sum('placed_order_packed_sum'))
-        sum_discount = ffz_placed_orders.objects.filter(
-            placed_order_store_id__store_name=store,
-            placed_order_date__gt=min,
-            placed_order_date__lt=max,).aggregate(discount=Sum('placed_order_discount'))
         sum_pq = ffz_placed_orders.objects.filter(
             placed_order_store_id__store_name=store,
             placed_order_date__gt=min,
             placed_order_date__lt=max,).aggregate(placed_order_pq_total=Sum('placed_order_pq_total'))
-
-        # wallet_used = ffz_placed_orders.objects.filter(
-        #     placed_order_store_id__store_name=store,
-        #     placed_order_date__gt=min,
-        #     placed_order_date__lt=max,).aggregate(wallet_used=Sum('placed_order_wallet_amount'))
-        # wallet_adjustment = ffz_placed_orders.objects.filter(
-        #     placed_order_store_id__store_name=store,
-        #     placed_order_date__gt=min,
-        #     placed_order_date__lt=max,).aggregate(wallet_adjustment=Sum('placed_order_packed_wallet_adjustment'))
-        # online_credited=ffz_placed_orders.objects.all().aggregate(wallet_adjustment=Sum('bf_amount'))
-        # by_cash_sum=ffz_placed_orders.objects.all().aggregate(wallet_adjustment=Sum('placed_order_packed_wallet_adjustment'))
-        # print(amount[0]['bf_amount'])
 
         sum_data = {}
         sum_data['sub_total'] = sum_sub_total['sub_total']
@@ -859,6 +893,13 @@ def getfilterSettlement(request):
         sum_data['placed_order_pq_total'] = sum_pq['placed_order_pq_total']
         sum_data['online_credited'] = online_credited
         sum_data['gst'] = sum_gst['gst_sum']
+        sum_data['sum_by_Cash']=sum_by_cash
+        sum_data['sum_used_credit']=sum_used_credit
+        sum_data['sum_used_debit']=sum_used_debit
+        sum_data['sum_adjst_credit']=sum_adjst_credit
+        sum_data['sum_adjst_debit']=sum_adjst_debit
+        
+        
         return JsonResponse(
             {
                 'settlement_data': list(settlement_data),
@@ -873,10 +914,6 @@ def load_cities(request):
         city_data = ffz_main_city.objects.filter(
             main_store_id__store_name=store_name,status=1).values('name')
     return JsonResponse({'city_data': list(city_data)})
-
-
-
-
 
 
 
