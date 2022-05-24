@@ -151,17 +151,17 @@
                     <td>{{data.placed_order_delivery_date}}</td>
                     <td>{{data.placed_order_packed_time}}</td>
                     <td>{{data.placed_order_price}}</td>
-                    <td>{{data.wallet_adjustment_debit}}</td>
-                    <td>{{data.walllet_trans_debited}}</td>
+                    <td>{{data.wallet_adjst_credit}}</td>
+                    <td>{{data.wallet_adjst_debit}}</td>
                     <td>{{data.placed_order_discount}}</td>
                     <td>{{data.placed_order_pq_total}}</td>
                     <td>{{data.placed_order_packed_sum}}</td>
                     <td>{{data.placed_order_shipping_charge}}</td>
                     <td>{{data.placed_order_gst}}</td>
-                    <td></td>
-                    <td></td>
+                    <td>{{data.wallet_used_credit}}</td>
+                    <td>{{data.wallet_used_debit}}</td>
                     <td>{{data.bf_amount}}</td>
-                    <td></td>
+                    <td>{{data.by_cash}}</td>
                     <td>{{data.placed_order_payment_status_id__payment_status_name}}</td>
                     <td>{{data.placed_order_type_id}}</td>
                     <td>{{data.placed_order_order_status_id}}</td>
@@ -177,17 +177,17 @@
                 <tfoot>
                   <td colspan="6" class="text-center">total</td>
                   <td id="sub_total">{{sum_data.sub_total}}</td>
-                  <td></td>
-                  <td></td>
+                  <td id="wallet_adjst_credit">{{sum_data.sum_adjst_credit}}</td>
+                  <td id="wallet_adjst_debit">{{sum_data.sum_adjst_debit}}</td>
                   <td id="discount">{{sum_data.discount}}</td>
                   <td id="pg_total">{{sum_data.placed_order_pq_total}}</td>
                   <td id="packed_sum">{{sum_data.packed_sum}}</td>
                   <td id="shipping">{{sum_data.shipping}}</td>
                   <td id="gst">{{sum_data.gst}}</td>
-                  <td></td>
-                  <td></td>
+                  <td id="wallet_used_credit">{{sum_data.sum_used_credit}}</td>
+                  <td id="wallet_used_debit">{{sum_data.sum_used_debit}}</td>
                   <td id="online_creditted">{{sum_data.online_credited}}</td>
-                  <td></td>
+                  <td id="by_cash">{{sum_data.sum_by_Cash}}</td>
                   <td></td>
                   <td></td>
                   <td></td>
@@ -342,24 +342,24 @@
                       + item.placed_order_delivery_date  + '</td><td>' 
                         + item.placed_order_packed_time + '</td><td>' 
                           + item.placed_order_price + '</td><td>' 
-                          + item.placed_order_price + '</td><td>' 
-                          + item.placed_order_price + '</td><td>' 
-                            + item.placed_order_shipping_charge + '</td><td>' 
-                              + item.placed_order_gst + '</td><td>' 
-                              + item.placed_order_gst + '</td><td>' 
-                              + item.placed_order_gst + '</td><td>' 
-                                + item.placed_order_packed_sum + '</td><td>' 
-                                  + item.placed_order_wallet_amount + '</td><td>' 
-                                    + item.placed_order_packed_wallet_adjustment + '</td><td>' 
-                                      + item.bf_amount + '</td><td>'  
-                                      + item.bf_amount + '</td><td>' 
-                                          + item.placed_order_payment_status_id__payment_status_name + '</td><td>' 
-                                            + item.placed_order_type_id + '</td><td>' 
-                                              + item.placed_order_order_status_id + '</td><td>' 
-                                                + item.placed_order_txtn_id + '</td><td>' 
-                                                  + item.razor_payment_id + '</td><td>' 
-                                                    + item.placed_order_store_id + '</td></tr>'; 
-                                            
+                            + item.wallet_adjst_credit + '</td><td>' 
+                              + item.wallet_adjst_debit + '</td><td>' 
+                                + item.placed_order_discount + '</td><td>' 
+                                  + item.placed_order_pq_total + '</td><td>' 
+                                    + item.placed_order_packed_sum + '</td><td>' 
+                                      + item.placed_order_shipping_charge + '</td><td>' 
+                                        + item.placed_order_gst + '</td><td>' 
+                                          + item.wallet_used_credit + '</td><td>' 
+                                            + item.wallet_used_debit + '</td><td>' 
+                                              + item.bf_amount + '</td><td>' 
+                                                + item.by_cash + '</td><td>' 
+                                                  + item.placed_order_payment_status_id__payment_status_name + '</td><td>' 
+                                                    + item.placed_order_type_id + '</td><td>' 
+                                                      + item.placed_order_order_status_id + '</td><td>'  
+                                                        + item.placed_order_txtn_id + '</td><td>' 
+                                                          + item.razor_payment_id + '</td><td>' 
+                                                            + item.placed_order_store_id + '</td></tr>'; 
+                                                  
         });
         $('#settlement_report').append(trHTML);
         
@@ -372,6 +372,10 @@
         $('#online_creditted').html(sum_data.online_credited);
         $('#pg_total').html(sum_data.pg_total)
         $('#discount').html(sum_data.discount)
+        $('#wallet_adjst_credit').html(sum_data.sum_adjst_credit)
+        $('#wallet_adjst_debit').html(sum_data.sum_adjst_debit)
+        $('#wallet_used_credit').html(sum_data.sum_used_credit)
+        $('#wallet_used_debit').html(sum_data.sum_used_debit)
         loadDataTable()
         $('#btn_filter').prop("disabled", false);
         $('#btn_filter').val('Filter');

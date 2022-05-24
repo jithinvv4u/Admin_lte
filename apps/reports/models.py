@@ -144,7 +144,6 @@ class Notify(models.Model):
         managed=False
         db_table='ffz_notify'
 
-
 class ffz_payment_status(models.Model):
     payment_status_id=models.AutoField(primary_key=True)
     payment_status_name=models.CharField(max_length=45)

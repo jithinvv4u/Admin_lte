@@ -561,7 +561,6 @@ def settlement_report(request):
             'placed_order_store_id',
             'placed_order_discount',
             'placed_order_pq_total')
-
         
         sum_used_credit=0
         sum_used_debit=0
@@ -628,6 +627,9 @@ def settlement_report(request):
                 data.update(
                     {'razor_payment_id': razor_pay_id[0]['razor_payment_id']})
 
+  
+        
+        
         # user_ids=[data['placed_order_user_id'] for data in settlement_data]
         # walllet_debited_details=ffz_wallet_trans.objects.filter(
         #     wallet_trans_user_id__in=user_ids,wallet_trans_status=1).values(
@@ -706,7 +708,8 @@ def settlement_report(request):
 
         cities = ffz_main_city.objects.filter(
             main_store_id__store_name='Kakkanad',status=1).values('name')
-
+        
+        
         return render(
             request,
             'reports/settlement_report.html',
@@ -860,6 +863,7 @@ def getfilterSettlement(request):
                 data.update({'bf_amount': amount[0]['bf_amount']})
                 online_credited += int(data['bf_amount'])
 
+
         sum_sub_total = ffz_placed_orders.objects.filter(
             placed_order_store_id__store_name=store,
             placed_order_date__gt=min,
@@ -906,7 +910,6 @@ def getfilterSettlement(request):
                 'sum_data': sum_data,
             }
         )
-
 
 def load_cities(request):
     if request.method == 'POST':
@@ -955,3 +958,4 @@ def getfilterUser(requset):
         return JsonResponse({
             'user_data': list(user_data),
         })
+
