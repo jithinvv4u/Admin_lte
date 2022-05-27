@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.utils.dateparse import parse_date
 import datetime
 
+
 def notify_report_view(request):
     notify_report = Notify.objects.values(
         'veg_id',
@@ -74,6 +75,7 @@ def getfilterVeg(request):
         store = request.POST.get('store')
         category = request.POST.get('category')
         date = request.POST.get('date')
+        print(store)
         if category == 'All':
             filtered_vegData = ffz_veg_price.objects.filter(
                 veg_price_store_id__store_name=store,
@@ -88,30 +90,64 @@ def getfilterVeg(request):
             filtered_vegData = ffz_veg_price.objects.filter(
                 veg_price_store_id__store_name=store,
                 veg_price_veg_id__veg_type__name=category,
+                veg_price_modify_date__contains=date,
             ).values(
                 'veg_price_veg_id',
                 'veg_price_veg_id__veg_name',
                 'veg_price_veg_id__veg_min_qty',
                 'veg_price_basic_rate',
             )
+        print(filtered_vegData)
         return JsonResponse({'filtered_vegData': list(filtered_vegData)})
 
 
 def wallet_transaction_view(request):
-    credit = ffz_wallet_trans.objects.filter(
-        wallet_trans_status=1
-    ).aggregate(
-        credit=Max('wallet_trans_amount')
-    )
-    debit = ffz_wallet_trans.objects.filter(
-        wallet_trans_status=2
-    ).aggregate(
-        debit=Max('wallet_trans_amount')
-    )
-    return render(
-        request,
-        'reports/wallet-transaction-report.html',
-    )
+    if request.method == 'GET':
+        max = datetime.date.today()
+        min=max - datetime.timedelta(30)
+        walletData= ffz_wallet_trans.objects.filter(
+            wallet_trans_time__gt=min,
+            wallet_trans_time__lt=max
+        ).values(
+            'wallet_trans_id',
+            'wallet_trans_user_id__user_name',
+            'wallet_trans_time',
+            'wallet_trans_placed_order_id',
+            'wallet_trans_message',
+            'wallet_trans_status',
+            'wallet_trans_amount',
+        )
+        
+        credit = ffz_wallet_trans.objects.filter(
+            wallet_trans_status=1,
+            wallet_trans_time__gt=min,
+            wallet_trans_time__lt=max,
+        ).aggregate(credit=Sum('wallet_trans_amount'))
+        debit = ffz_wallet_trans.objects.filter(
+            wallet_trans_status=2,
+            wallet_trans_time__gt=min,
+            wallet_trans_time__lt=max,
+        ).aggregate(debit=Sum('wallet_trans_amount'))
+        refund = ffz_wallet_trans.objects.filter(
+            wallet_trans_status=3,
+            wallet_trans_time__gt=min,
+            wallet_trans_time__lt=max
+        ).aggregate(refund=Sum('wallet_trans_amount'))
+        if refund['refund'] == None:
+            refund['refund'] = 0
+        total = credit['credit']+debit['debit']+refund['refund']
+
+        return render(
+            request,
+            'reports/wallet-transaction-report.html',
+            {
+                'walletData': list(walletData),
+                'credit': credit,
+                'debit': debit,
+                'refund': refund,
+                'total': total,
+            }
+        )
 
 
 def getfilterWallet(request):
@@ -164,7 +200,7 @@ def stock_in_hand_view(request):
     vegs = ffz_vegitables.objects.values('veg_name')
     stock_data = ffz_veg_inventory.objects.filter(
         veg_inventory_store_id__store_name='Coimbatore',
-        veg_inventory_veg_id__veg_name='Tomato',
+        veg_inventory_veg_id__veg_name='Tapioca',
     ).values(
         'veg_inventory_id',
         'veg_inventory_veg_id',
@@ -213,43 +249,56 @@ def stock_in_hand_view(request):
             data.update(
                 {'order_placed_id': orderplaced_id[0]['order_placed_id']})
 
-    # inventory_veg_ids = [data['veg_inventory_veg_id'] for data in stock_data]
-    # stock_packed_details = ffz_packed.objects.filter(
-    #     packed_order_id__in=inventory_veg_ids).values(
-    #         'packed_order_id',
-    #         'packed_order_qty')
-    # for data in stock_data:
-    #     packed_qty = list(filter(lambda packedqty: packedqty['packed_order_id'] == data['veg_inventory_veg_id'], stock_packed_details))
-    #     if packed_qty:
-    #         data.update({'order_placed_id': packed_qty[0]['order_placed_id']})
+    inventory_veg_ids = [data['veg_inventory_veg_id'] for data in stock_data]
+    inventory_log_details = ffz_inventory_log.objects.filter(
+        inventory_veg_id__in=inventory_veg_ids,
+        inventory_log_type=2,
+        ).annotate(
+            wastage_report=F('inventory_veg_qty') * F('inventory_price')
+            ).values('wastage_report','inventory_veg_id')
+    for data in stock_data:
+        inv_veg_qty = list(filter(
+            lambda wastagedata: wastagedata['inventory_veg_id'] == data['veg_inventory_veg_id'], inventory_log_details))
+        if inv_veg_qty:
+            data.update(
+                {'wastage': inv_veg_qty[0]['wastage_report']})
 
-    stock_packed = ffz_packed.objects.values(
-        'packed_order_id',
-        'packed_order_qty',
-    )
-    data2 = ffz_veg_inventory.objects.filter()
+    inventory_veg_ids = [data['veg_inventory_veg_id'] for data in stock_data]
+    inventory_log_details = ffz_inventory_log.objects.filter(
+        inventory_veg_id__in=inventory_veg_ids,
+        inventory_log_type=3,
+        ).annotate(stock_sent=Sum('inventory_veg_qty')).values('stock_sent','inventory_veg_id')
+    for data in stock_data:
+        inv_veg_qty = list(filter(
+            lambda stockdata: stockdata['inventory_veg_id'] == data['veg_inventory_veg_id'], inventory_log_details))
+        if inv_veg_qty:
+            data.update(
+                {'stock_sent': inv_veg_qty[0]['stock_sent']})
 
-    # audit=ffz_audit_log_details.objects.values(
-    #     'audit_log_detail_veg_id',
-    #     'audit_log_detail_qty'
-    #     )
-    # inventory_added=ffz_inventory_log.objects.values(
-    #     'inventory_veg_id',
-    #     'inventory_veg_qty'
-    #     )
-    # order_not_yet_packed=ffz_orders.objects.filter(
-    #     order_order_status_id=2,
-    #     ).values(
-    #         'order_veg_id',
-    #         'order_placed_id',
-    #         )
-
-    # result=audit | inventory_added
-    # result = list(chain(audit, inventory_added))
-
-    # result = audit.union(inventory_added.select_related("foreignModel"))
-    # result = sorted(chain(audit, data),key=attrgetter('audit_log_detail_veg_id'))
-
+    inventory_veg_ids = [data['veg_inventory_veg_id'] for data in stock_data]
+    order_details = ffz_orders.objects.filter(
+        order_veg_id__in=inventory_veg_ids,
+        ).values('order_id','order_veg_id')
+    for data in stock_data:
+        inv_veg_qty = list(filter(
+            lambda stockpack: stockpack['order_veg_id'] == data['veg_inventory_veg_id'], order_details))
+        if inv_veg_qty:
+            data.update(
+                {'order_id': inv_veg_qty[0]['order_id']})
+    order_details=[data['order_id'] for data in order_details]
+    packed_details=ffz_packed.objects.filter(
+        packed_order_id__in=order_details
+        ).values(
+            'packed_order_qty',
+            'packed_order_id'
+            )
+    for data in stock_data:
+        inv_veg_qty = list(filter(
+            lambda stockpack: stockpack['packed_order_id'] == data['order_id'], packed_details))
+        if inv_veg_qty:
+            data.update(
+                {'packed_order_qty': inv_veg_qty[0]['packed_order_qty']})
+            
     return render(
         request,
         'reports/stock-in-hand-report.html',
@@ -265,47 +314,133 @@ def getfilterStock(request):
     if request.method == 'POST':
         store = request.POST.get('store')
         vegitable = request.POST.get('vegitable')
+        stock_filters={}
         if vegitable == 'All':
-            data = ffz_veg_inventory.objects.filter(
-                veg_inventory_store_id__store_name=store
-            ).values(
-                'veg_inventory_id',
-                'veg_inventory_veg_id',
-                'veg_inventory_veg_id__veg_name',
-                'veg_inventory_stock_in_hand',
-                'veg_inventory_veg_id__veg_basic_rate',
-                'veg_inventory_veg_id__veg_measurement'
-            ).annotate(
-                stock_total=F('veg_inventory_stock_in_hand') *
-                F('veg_inventory_veg_id__veg_basic_rate')
-            )
+            stock_filters={
+                'veg_inventory_store_id__store_name':store,
+            }
         else:
-            data = ffz_veg_inventory.objects.filter(
-                veg_inventory_store_id__store_name=store,
-                veg_inventory_veg_id__veg_name=vegitable
-            ).values(
-                'veg_inventory_id',
-                'veg_inventory_veg_id',
-                'veg_inventory_veg_id__veg_name',
-                'veg_inventory_stock_in_hand',
-                'veg_inventory_veg_id__veg_basic_rate',
-                'veg_inventory_veg_id__veg_measurement'
+            stock_filters.update({
+                'veg_inventory_store_id__store_name':store,
+                'veg_inventory_veg_id__veg_name':vegitable,
+            })
+            
+        stock_data = ffz_veg_inventory.objects.filter(Q(**stock_filters)).values(
+            'veg_inventory_id',
+            'veg_inventory_veg_id',
+            'veg_inventory_veg_id__veg_name',
+            'veg_inventory_stock_in_hand',
+            'veg_inventory_veg_id__veg_basic_rate',
+            'veg_inventory_veg_id__veg_measurement'
             ).annotate(
-                stock_total=F('veg_inventory_stock_in_hand') *
-                F('veg_inventory_veg_id__veg_basic_rate')
-            )
-        return JsonResponse({'data': list(data)})
+            stock_total=F('veg_inventory_stock_in_hand') *F('veg_inventory_veg_id__veg_basic_rate')
+        )
+
+
+        inventory_veg_ids = [data['veg_inventory_veg_id'] for data in stock_data]
+        audit_log_details = ffz_audit_log_details.objects.filter(
+            audit_log_detail_veg_id__in=inventory_veg_ids).values(
+                'audit_log_detail_veg_id',
+                'audit_log_detail_qty')
+        for data in stock_data:
+            audit_log_qty = list(filter(
+                lambda auditqty: auditqty['audit_log_detail_veg_id'] == data['veg_inventory_veg_id'], audit_log_details))
+            if audit_log_qty:
+                data.update(
+                    {'audit_log_detail_qty': audit_log_qty[0]['audit_log_detail_qty']})
+
+        inventory_veg_ids = [data['veg_inventory_veg_id'] for data in stock_data]
+        inventory_log_details = ffz_inventory_log.objects.filter(
+            inventory_veg_id__in=inventory_veg_ids).values(
+                'inventory_veg_id',
+                'inventory_veg_qty')
+        for data in stock_data:
+            inv_veg_qty = list(filter(
+                lambda veginvqty: veginvqty['inventory_veg_id'] == data['veg_inventory_veg_id'], inventory_log_details))
+            if inv_veg_qty:
+                data.update(
+                    {'inventory_veg_qty': inv_veg_qty[0]['inventory_veg_qty']})
+
+        inventory_veg_ids = [data['veg_inventory_veg_id'] for data in stock_data]
+        orders_details = ffz_orders.objects.filter(
+            order_veg_id__in=inventory_veg_ids).values(
+                'order_veg_id',
+                'order_placed_id')
+        for data in stock_data:
+            orderplaced_id = list(filter(
+                lambda orderid: orderid['order_veg_id'] == data['veg_inventory_veg_id'], orders_details))
+            if orderplaced_id:
+                data.update(
+                    {'order_placed_id': orderplaced_id[0]['order_placed_id']})
+
+        inventory_veg_ids = [data['veg_inventory_veg_id'] for data in stock_data]
+        inventory_log_details = ffz_inventory_log.objects.filter(
+            inventory_veg_id__in=inventory_veg_ids,
+            inventory_log_type=2,
+            ).annotate(
+                wastage_report=F('inventory_veg_qty') * F('inventory_price')
+                ).values('wastage_report','inventory_veg_id')
+        for data in stock_data:
+            inv_veg_qty = list(filter(
+                lambda wastagedata: wastagedata['inventory_veg_id'] == data['veg_inventory_veg_id'], inventory_log_details))
+            if inv_veg_qty:
+                data.update(
+                    {'wastage': inv_veg_qty[0]['wastage_report']})
+
+        inventory_veg_ids = [data['veg_inventory_veg_id'] for data in stock_data]
+        inventory_log_details = ffz_inventory_log.objects.filter(
+            inventory_veg_id__in=inventory_veg_ids,
+            inventory_log_type=3,
+            ).annotate(stock_sent=Sum('inventory_veg_qty')).values('stock_sent','inventory_veg_id')
+        for data in stock_data:
+            inv_veg_qty = list(filter(
+                lambda stockdata: stockdata['inventory_veg_id'] == data['veg_inventory_veg_id'], inventory_log_details))
+            if inv_veg_qty:
+                data.update(
+                    {'stock_sent': inv_veg_qty[0]['stock_sent']})
+
+        inventory_veg_ids = [data['veg_inventory_veg_id'] for data in stock_data]
+        order_details = ffz_orders.objects.filter(
+            order_veg_id__in=inventory_veg_ids,
+            ).values('order_id','order_veg_id')
+        for data in stock_data:
+            inv_veg_qty = list(filter(
+                lambda stockpack: stockpack['order_veg_id'] == data['veg_inventory_veg_id'], order_details))
+            if inv_veg_qty:
+                data.update(
+                    {'order_id': inv_veg_qty[0]['order_id']})
+        order_details=[data['order_id'] for data in order_details]
+        packed_details=ffz_packed.objects.filter(
+            packed_order_id__in=order_details
+            ).values(
+                'packed_order_qty',
+                'packed_order_id'
+                )
+        for data in stock_data:
+            inv_veg_qty = list(filter(
+                lambda stockpack: stockpack['packed_order_id'] == data['order_id'], packed_details))
+            if inv_veg_qty:
+                data.update(
+                    {'packed_order_qty': inv_veg_qty[0]['packed_order_qty']})
+
+
+        return JsonResponse({'data': list(stock_data)})
 
 
 def user_referral_report(request):
-    referral_data = ffz_user_referral.objects.filter(id=1).values(
-        'id',
-        'user_id__user_name',
-        'user_referral_id__user_name',
-        'referral_date',
-        'order_id__order_date',
-        'active_refferal'
-    )
+    max=datetime.date.today()
+    min= max - datetime.timedelta(30)
+    referral_data = ffz_user_referral.objects.filter(
+        referral_date__lt=max,
+        referral_date__gt=min,
+        ).values(
+            'id',
+            'user_id__user_name',
+            'user_referral_id__user_name',
+            'referral_date',
+            'order_id__order_date',
+            'active_refferal'
+        )
     return render(request,
                   'reports/referral.html',
                   {'referral_data': referral_data}
@@ -316,35 +451,45 @@ def getfilterReferrals(request):
     if request.method == 'POST':
         min = request.POST.get('min')
         max = request.POST.get('max')
+        print(min)
+        print(max)
         referral_data = ffz_user_referral.objects.filter(
-            referral_date__gt=min,
             referral_date__lt=max,
-        ).values(
-            'id',
-            'user_id__user_name',
-            'user_referral_id__user_name',
-            'referral_date',
-            'order_id__order_date',
-            'active_refferal'
-        )
+            referral_date__gt=min,
+            ).values(
+                'id',
+                'user_id__user_name',
+                'user_referral_id__user_name',
+                'referral_date',
+                'order_id__order_date',
+                'active_refferal'
+            )
+        print(referral_data)
         return JsonResponse({'referral_data': list(referral_data)})
 
 
 def order_wallet_trans(request):
-    order_wallet_data = ffz_wallet_trans.objects.values(
-        'wallet_trans_id',
-        'wallet_trans_user_id',
-        'wallet_trans_user_id__user_email',
-        'wallet_trans_placed_order_id',
-        'wallet_trans_placed_order_id__placed_order_date',
-        'wallet_trans_time',
-        'wallet_trans_id__reson',
-        'wallet_trans_message',
-        'wallet_trans_status',
-        'wallet_trans_amount'
-    )
+    max=datetime.date.today()
+    min=max - datetime.timedelta(30)
+    order_wallet_data = ffz_wallet_trans.objects.filter(
+        wallet_trans_placed_order_id__placed_order_date__gt=min,
+        wallet_trans_placed_order_id__placed_order_date__lt=max,
+        ).values(
+            'wallet_trans_id',
+            'wallet_trans_user_id',
+            'wallet_trans_user_id__user_email',
+            'wallet_trans_placed_order_id',
+            'wallet_trans_placed_order_id__placed_order_date',
+            'wallet_trans_time',
+            'wallet_trans_id__reson',
+            'wallet_trans_message',
+            'wallet_trans_status',
+            'wallet_trans_amount'
+        )
     person_data = ffz_wallet_trans.objects.filter(
-        wallet_trans_user_id=126120
+        wallet_trans_user_id=126120,
+        wallet_trans_placed_order_id__placed_order_date__gt=min,
+        wallet_trans_placed_order_id__placed_order_date__lt=max,
     ).values(
         'wallet_trans_user_id__user_email'
     ).annotate(
@@ -352,7 +497,10 @@ def order_wallet_trans(request):
         amount=Sum('wallet_trans_amount')
     )
 
-    others = ffz_wallet_trans.objects.filter().exclude(
+    others = ffz_wallet_trans.objects.filter(
+        wallet_trans_placed_order_id__placed_order_date__gt=min,
+        wallet_trans_placed_order_id__placed_order_date__lt=max,
+        ).exclude(
         wallet_trans_user_id=126120
     ).aggregate(
         other_transactions=Count('wallet_trans_user_id'),
@@ -362,16 +510,22 @@ def order_wallet_trans(request):
     other_amount = others['other_amount']
 
     credit = ffz_wallet_trans.objects.filter(
+        wallet_trans_placed_order_id__placed_order_date__gt=min,
+        wallet_trans_placed_order_id__placed_order_date__lt=max,
         wallet_trans_status=1,
     ).aggregate(
         credit=Sum('wallet_trans_amount')
     )
     debit = ffz_wallet_trans.objects.filter(
         wallet_trans_status=2,
+        wallet_trans_placed_order_id__placed_order_date__gt=min,
+        wallet_trans_placed_order_id__placed_order_date__lt=max,
     ).aggregate(
         debit=Sum('wallet_trans_amount')
     )
     refund = ffz_wallet_trans.objects.filter(
+        wallet_trans_placed_order_id__placed_order_date__gt=min,
+        wallet_trans_placed_order_id__placed_order_date__lt=max,
         wallet_trans_status=3,
     ).aggregate(
         refund=Sum('wallet_trans_amount')
@@ -408,6 +562,7 @@ def getPiechartWallet(request):
             reson='God_Will').aggregate(god_will_count=Count('wallet_trans_id'))
         system = ffz_wallet_trans_history.objects.filter().exclude(
             reson='billing_error').aggregate(system_count=Count('wallet_trans_id'))
+        
         return JsonResponse(
             {
                 'billing_error': billing_error,
@@ -486,30 +641,30 @@ def getfilterOrderWallet(request):
             other_transactions=Count('wallet_trans_user_id'),
             other_amount=Sum('wallet_trans_amount')
         )
-
-        # billing_error=ffz_wallet_trans.objects.filter(
-        #     wallet_trans_id__reson='billing_error',
-        #     wallet_trans_placed_order_id__placed_order_date__gt=min,
-        #     wallet_trans_placed_order_id__placed_order_date__lt=max,
-        #     ).aggregate(
-        #         billing_error_count=Count('wallet_trans_id')
-        #         )
-
-        # god_will=ffz_wallet_trans.objects.filter(
-        #     wallet_trans_id__reson='God_Will',
-        #     wallet_trans_placed_order_id__placed_order_date__gt=min,
-        #     wallet_trans_placed_order_id__placed_order_date__lt=max,
-        #     ).aggregate(
-        #         god_will_count=Count('wallet_trans_id')
-        #         )
-        # system=ffz_wallet_trans.objects.filter().exclude(
-        #     wallet_trans_id__reson='billing_error',
-        #     wallet_trans_placed_order_id__placed_order_date__gt=min,
-        #     wallet_trans_placed_order_id__placed_order_date__lt=max,
-        #     ).aggregate(
-        #         system_count=Count('wallet_trans_id')
-        #         )
-
+        billing_error=ffz_wallet_trans.objects.filter(
+            wallet_trans_id__reson='billing_error',
+            wallet_trans_placed_order_id__placed_order_date__gt=min,
+            wallet_trans_placed_order_id__placed_order_date__lt=max,
+            ).aggregate(
+                billing_error_count=Count('wallet_trans_id')
+                )
+        god_will=ffz_wallet_trans.objects.filter(
+            wallet_trans_id__reson='God_Will',
+            wallet_trans_placed_order_id__placed_order_date__gt=min,
+            wallet_trans_placed_order_id__placed_order_date__lt=max,
+            ).aggregate(
+                god_will_count=Count('wallet_trans_id')
+                )
+        
+        system=ffz_wallet_trans.objects.filter(
+            wallet_trans_placed_order_id__placed_order_date__gt=min,
+            wallet_trans_placed_order_id__placed_order_date__lt=max,
+            ).exclude(
+                wallet_trans_id__reson='billing_error',
+                ).aggregate(
+                    system_count=Count('wallet_trans_id')
+                    )
+                
         all_data = {}
         all_data['person_email'] = [data['wallet_trans_user_id__user_email']
                                     for data in person_data]
@@ -522,13 +677,12 @@ def getfilterOrderWallet(request):
         all_data['debit'] = debit['debit']
         all_data['refund'] = refund['refund']
         all_data['total'] = total
-
         return JsonResponse({
             'order_wallet_data': list(order_wallet_data),
             'all_data': all_data,
-            # 'billing_error':billing_error,
-            # 'god_will':god_will,
-            # 'system':system,
+            'billing_error':billing_error,
+            'god_will':god_will,
+            'system':system,
         }
         )
 
@@ -958,4 +1112,3 @@ def getfilterUser(requset):
         return JsonResponse({
             'user_data': list(user_data),
         })
-

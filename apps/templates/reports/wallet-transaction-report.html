@@ -46,7 +46,8 @@
                   <label>Delivery To: </label>
                   <input class="form-control" type="datetime-local" id="max" name="min">
                 </div>
-                <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter" style="background-color: #337ab7;">
+                <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter"
+                  style="background-color: #337ab7;">
               </form>
 
               <table id="table_wallet" class="table table-bordered table-hover">
@@ -63,18 +64,26 @@
                 </thead>
                 <tbody>
                   {% for data in walletData %}
-                  <tr class="text-center"></tr>
+                  <tr class="text-center">
+                    <td>{{data.wallet_trans_id}}</td>
+                    <td>{{data.wallet_trans_user_id__user_name}}</td>
+                    <td>{{data.wallet_trans_time}}</td>
+                    <td>{{data.wallet_trans_placed_order_id}}</td>
+                    <td>{{data.wallet_trans_message}}</td>
+                    <td>{{data.wallet_trans_status}}</td>
+                    <td>{{data.wallet_trans_amount}}</td>
+                  </tr>
                   {% endfor %}
                 </tbody>
                 <tfoot>
-                <tr class="text-center">
+                  <tr class="text-center">
                     <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
                     <td>Total Credits</td>
-                    <td id="credit">0.00</td>
+                    <td id="credit">{{credit.credit}}</td>
                   </tr>
                   <tr class="text-center">
                     <td></td>
@@ -83,7 +92,7 @@
                     <td></td>
                     <td></td>
                     <td>Total Debts</td>
-                    <td id="debit" >0.00</td>
+                    <td id="debit">{{debit.debit}}</td>
                   </tr>
                   <tr class="text-center">
                     <td></td>
@@ -92,7 +101,7 @@
                     <td></td>
                     <td></td>
                     <td>Total Refund</td>
-                    <td id="refund">0.00</td>
+                    <td id="refund">{{refund.refund}}</td>
                   </tr>
                   <tr class="text-center">
                     <td></td>
@@ -101,7 +110,7 @@
                     <td></td>
                     <td></td>
                     <td>Total Amount</td>
-                    <td  id="total">0.00</td>
+                    <td id="total">{{total}}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -155,7 +164,7 @@
 <!-- page script -->
 
 <script>
-          $(window).on("load",function(){
+  $(window).on("load", function () {
     $(".loader-wrapper").fadeOut("slow");
   });
 
@@ -181,10 +190,10 @@
   $('#btn_filter').click(function () {
     var min = $('#min').val();
     var max = $('#max').val();
-      // disable button
-      $(this).prop("disabled", true);
-      // add loading to button
-      $(this).val('loading...');
+    // disable button
+    $(this).prop("disabled", true);
+    // add loading to button
+    $(this).val('loading...');
 
     $.ajax({
       method: 'POST',
@@ -198,10 +207,10 @@
 
       success: function (response) {
         data = response.filter_date;
-        credit=response.credit['credit']
-        debit=response.debit['debit']
-        refund=response.refund['refund']
-        total=response.total
+        credit = response.credit['credit']
+        debit = response.debit['debit']
+        refund = response.refund['refund']
+        total = response.total
 
         $('#credit').html(credit)
         $('#debit').html(debit)
@@ -211,7 +220,14 @@
         $('#table_wallet').DataTable().clear().destroy();
         var trHTML = '';
         $.each(data, function (i, item) {
-          trHTML += '<tr class="text-center"><td>' + item.wallet_trans_id + '</td><td>' + item.wallet_trans_user_id__user_name + '</td><td>' + item.wallet_trans_time + '</td><td>' + item.wallet_trans_placed_order_id + '</td><td>' + item.wallet_trans_message + '</td><td>' + item.wallet_trans_status + '</td><td>' + item.wallet_trans_amount +'</td></tr>';
+          trHTML += '<tr class="text-center"><td>'
+            + item.wallet_trans_id + '</td><td>'
+            + item.wallet_trans_user_id__user_name + '</td><td>'
+            + item.wallet_trans_time + '</td><td>'
+            + item.wallet_trans_placed_order_id + '</td><td>'
+            + item.wallet_trans_message + '</td><td>'
+            + item.wallet_trans_status + '</td><td>'
+            + item.wallet_trans_amount + '</td></tr>';
         });
         $('#table_wallet').append(trHTML);
 

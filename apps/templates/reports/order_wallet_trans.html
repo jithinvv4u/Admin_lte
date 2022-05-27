@@ -81,14 +81,14 @@
                                             <td id="person_transactions">{{all_data.person_transactions}}</td>
                                             <td id="person_amount">{{all_data.person_amount}}</td>
                                         </tr>
-                                        
+
                                         <tr class="text-center">
                                             <td></td>
                                             <td>Others</td>
                                             <td id="other_transactions">{{all_data.other_transactions}}</td>
                                             <td id="other_amount">{{all_data.other_amount}}</td>
                                         </tr>
-                                            
+
 
 
                                     </tbody>
@@ -102,7 +102,7 @@
                                         Total Credit
                                     </div>
                                     <div class="card-body">
-                                        <h5 class="card-title"  id="card_credit">{{all_data.credit}}</h5>
+                                        <h5 class="card-title" id="card_credit">{{all_data.credit}}</h5>
                                     </div>
                                 </div>
                             </div>
@@ -139,7 +139,6 @@
                         </div>
 
                         <div class="card-body">
-
 
                             <table id="order_wallet_trans" class="table table-bordered table-hover">
                                 <thead>
@@ -228,8 +227,8 @@
 <!-- page script -->
 
 <script>
-    $(window).on("load",function(){
-    $(".loader-wrapper").fadeOut("slow");
+    $(window).on("load", function () {
+        $(".loader-wrapper").fadeOut("slow");
     });
 
     $(function () {
@@ -255,9 +254,7 @@
     $('#btn_filter').click(function () {
         var min = $('#min').val();
         var max = $('#max').val();
-        // disable button
         $(this).prop("disabled", true);
-        // add loading to button
         $(this).val('loading...');
 
         $.ajax({
@@ -271,13 +268,26 @@
             datatype: "json",
 
             success: function (response) {
-                data = response.order_wallet_data;
-                all_data=response.all_data;
-                // billing_error=response.billing_error.billing_error_count;
-                // god_will=response.god_will.god_will_count;
-                // system=response.system.system_count;
-                // console.log(billing_error);
-                
+                wallet_data = response.order_wallet_data;
+                all_data = response.all_data;
+                billing_error = response.billing_error.billing_error_count;
+                god_will = response.god_will.god_will_count;
+                system = response.system.system_count;
+
+                var data = google.visualization.arrayToDataTable([
+                    ['Task', 'Hours per Day'],
+                    ['Biling Error', billing_error],
+                    ['God Will', god_will],
+                    ['System', system],
+
+                ]);
+                var options = {
+                    title: 'Wallet Transaction Reason',
+                    is3D: true
+                };
+                var chart = new google.visualization.PieChart(document.getElementById('piechart3d'));
+                chart.draw(data, options);
+
                 $('#card_credit').text(all_data['credit'])
                 $('#card_debit').text(all_data['debit'])
                 $('#card_refund').text(all_data['refund'])
@@ -287,11 +297,10 @@
                 $('#person_amount').text(all_data['person_amount'])
                 $('#other_transactions').text(all_data['other_transactions'])
                 $('#other_amount').text(all_data['other_amount'])
-                
-                    
+
                 $('#order_wallet_trans').DataTable().clear().destroy();
                 var trHTML = '';
-                $.each(data, function (i, item) {
+                $.each(wallet_data, function (i, item) {
                     trHTML += '<tr class="text-center"><td>'
                         + item.wallet_trans_id + '</td><td>'
                         + item.wallet_trans_user_id + '</td><td>'
@@ -299,6 +308,7 @@
                         + item.wallet_trans_placed_order_id + '</td><td>'
                         + item.wallet_trans_placed_order_id__placed_order_date + '</td><td>'
                         + item.wallet_trans_time + '</td><td>'
+                        + item.wallet_trans_id__reson + '</td><td>'
                         + item.wallet_trans_message + '</td><td>'
                         + item.wallet_trans_status + '</td><td>'
                         + item.wallet_trans_amount + '</td></tr>';
@@ -307,21 +317,6 @@
                 $('#btn_filter').prop("disabled", false);
                 $('#btn_filter').val('Filter');
                 loadDataTable()
-
-               
-                // var data = google.visualization.arrayToDataTable([
-                //         ['Task', 'Hours per Day'],
-                //         ['Biling Error', billing_error],
-                //         ['God Will', god_will],
-                //         ['System', 0],
-                //     ]);
-                // var options = {
-                //     title: 'Wallet Transaction Reason',
-                //     is3D: true
-                // };
-                // var chart = new google.visualization.PieChart(document.getElementById('piechart3d'));
-
-                // chart.draw(data, options);
 
             }
         })
@@ -339,9 +334,9 @@
                 datatype: "json",
 
                 success: function (response) {
-                    var billing_error=response.billing_error.billing_error_count;
-                    var god_will=response.god_will.god_will_count;
-                    var system=response.system.system_count;
+                    var billing_error = response.billing_error.billing_error_count;
+                    var god_will = response.god_will.god_will_count;
+                    var system = response.system.system_count;
                     console.log(system);
                     var data = google.visualization.arrayToDataTable([
                         ['Task', 'Hours per Day'],

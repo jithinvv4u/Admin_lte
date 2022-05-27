@@ -62,6 +62,7 @@ class ffz_vegitables(models.Model):
         db_table='ffz_vegitables'
 
 class ffz_orders(models.Model):
+    order_id=models.IntegerField()
     order_placed_id=models.IntegerField(primary_key=True)
     order_order_status_id=models.IntegerField()
     order_veg_id=models.ForeignKey(
@@ -103,6 +104,8 @@ class ffz_inventory_log(models.Model):
         db_column='inventory_veg_id',
         )
     inventory_veg_qty=models.FloatField()
+    inventory_log_type=models.IntegerField()
+    inventory_price=models.FloatField()
     
     class Meta:
         managed=False

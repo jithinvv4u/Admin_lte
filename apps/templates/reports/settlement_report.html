@@ -15,9 +15,9 @@
 <link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
 <link rel="stylesheet" href="/static/assets/css/loader.css">
 <style>
-  #settlementForm > * {
+  #settlementForm>* {
     padding: 10px;
-}
+  }
 </style>
 {% endblock stylesheets %}
 
@@ -41,175 +41,176 @@
               <h3 class="font-weight-bold">Settlement Report</h3>
             </div>
 
-              <form id="settlementForm" class="form-inline">
-                {% csrf_token %}
+            <form id="settlementForm" class="form-inline">
+              {% csrf_token %}
 
-                <label>Store: </label>
-                <select class="form-control" id="select_store">
-                  {% for store in stores %}
-                  <option value="{{store.store_name}}" >{{store.store_name}}</option>
-                  {% endfor %}
-                </select>
+              <label>Store: </label>
+              <select class="form-control" id="select_store">
+                {% for store in stores %}
+                <option value="{{store.store_name}}">{{store.store_name}}</option>
+                {% endfor %}
+              </select>
 
-                <label>City: </label>
-                <select class="form-control" id="select_city">
-                  <option >All</option>
-                  {% for city in cities %}
-                  <option value="{{store.store_name}}" >{{city.name}}</option>
-                  {% endfor %}
-                </select>
+              <label>City: </label>
+              <select class="form-control" id="select_city">
+                <option>All</option>
+                {% for city in cities %}
+                <option value="{{store.store_name}}">{{city.name}}</option>
+                {% endfor %}
+              </select>
 
-                <label>Date Filter: </label>
-                <select class="form-control" id="select_date_filter">
-                  <option>Delivery Date</option>
-                  <option selected>Order Date</option>
-                </select>
+              <label>Date Filter: </label>
+              <select class="form-control" id="select_date_filter">
+                <option>Delivery Date</option>
+                <option selected>Order Date</option>
+              </select>
 
-                <label>Order Type: </label>
-                <select class="form-control" id="select_order_type">
-                  <option >All</option>
-                  <option >Active</option>
-                  <option >Cancelled</option>
-                </select>
+              <label>Order Type: </label>
+              <select class="form-control" id="select_order_type">
+                <option>All</option>
+                <option>Active</option>
+                <option>Cancelled</option>
+              </select>
 
-                <div class="form-group">
-                  <label>Minimum date: </label>
-                  <input class="form-control" type="date" id="min" name="min" value="2022-03-08">
-                </div>
-                <div class="form-group">
-                  <label>Maximum date: </label>
-                  <input class="form-control" type="date" id="max" name="min" value="2022-04-08">
-                </div>
+              <div class="form-group">
+                <label>Minimum date: </label>
+                <input class="form-control" type="date" id="min" name="min" value="2022-03-08">
+              </div>
+              <div class="form-group">
+                <label>Maximum date: </label>
+                <input class="form-control" type="date" id="max" name="min" value="2022-04-08">
+              </div>
 
-                <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter" style="background-color: #337ab7;">
-                
-              </form>
+              <input class="btn mb-2 text-white" type="button" id="btn_filter" value="Filter"
+                style="background-color: #337ab7;">
 
-              <table id="settlement_report" class="table table-bordered table-hover">
-                  
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th colspan="2">Wallet adjustment>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th colspan="2">Wallet Used>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                  </tr>
-                  <tr class="text-center">
-                    <th>User ID</th>
-                    <th>User Name</th>
-                    <th>Order ID/Bill No</th>
-                    <th>Ordered Date</th>
-                    <th>Delivery Date</th>
-                    <th>Packed Date</th>
-                    <th>Sub Total</th>
-                    <th>Credit</th>
-                    <th>Debit</th>
-                    <th>Discount</th>
-                    <th>PQ</th>
-                    <th>Packed Sum</th>
-                    <th>Shipping</th>
-                    <th>GST</th>
-                    <th>Credit</th>
-                    <th>Debit</th>
-                    <th>Online Credited</th>
-                    <th>By Cash</th>
-                    <th>Payment Method</th>
-                    <th>Order Type</th>
-                    <th>Order Status</th>
-                    <th>Transaction ID</th>
-                    <th>Razor Payment ID</th>
-                    <th>Store</th>
-                  </tr>
-                </thead>
-                <tbody id="table_body">
-                  {% for data in settlement_data %}
+            </form>
 
-                  <tr class="text-center">
+            <table id="settlement_report" class="table table-bordered table-hover">
 
-                    <td>{{data.placed_order_user_id}}</td>
-                    <td>{{data.placed_order_user_id__user_name}}</td>
-                    <td>{{data.placed_order_id}}</td>
-                    <td>{{data.placed_order_date}}</td>
-                    <td>{{data.placed_order_delivery_date}}</td>
-                    <td>{{data.placed_order_packed_time}}</td>
-                    <td>{{data.placed_order_price}}</td>
-                    <td>{{data.wallet_adjst_credit}}</td>
-                    <td>{{data.wallet_adjst_debit}}</td>
-                    <td>{{data.placed_order_discount}}</td>
-                    <td>{{data.placed_order_pq_total}}</td>
-                    <td>{{data.placed_order_packed_sum}}</td>
-                    <td>{{data.placed_order_shipping_charge}}</td>
-                    <td>{{data.placed_order_gst}}</td>
-                    <td>{{data.wallet_used_credit}}</td>
-                    <td>{{data.wallet_used_debit}}</td>
-                    <td>{{data.bf_amount}}</td>
-                    <td>{{data.by_cash}}</td>
-                    <td>{{data.placed_order_payment_status_id__payment_status_name}}</td>
-                    <td>{{data.placed_order_type_id}}</td>
-                    <td>{{data.placed_order_order_status_id}}</td>
-                    <td>{{data.placed_order_txtn_id}}</td>
-                    <td>{{data.razor_payment_id}}</td>
-                    <td>{{data.placed_order_store_id}}</td>
-                    <!-- <td>{{data.placed_order_wallet_amount}}</td>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th colspan="2">Wallet adjustment>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th colspan="2">Wallet Used>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                </tr>
+                <tr class="text-center">
+                  <th>User ID</th>
+                  <th>User Name</th>
+                  <th>Order ID/Bill No</th>
+                  <th>Ordered Date</th>
+                  <th>Delivery Date</th>
+                  <th>Packed Date</th>
+                  <th>Sub Total</th>
+                  <th>Credit</th>
+                  <th>Debit</th>
+                  <th>Discount</th>
+                  <th>PQ</th>
+                  <th>Packed Sum</th>
+                  <th>Shipping</th>
+                  <th>GST</th>
+                  <th>Credit</th>
+                  <th>Debit</th>
+                  <th>Online Credited</th>
+                  <th>By Cash</th>
+                  <th>Payment Method</th>
+                  <th>Order Type</th>
+                  <th>Order Status</th>
+                  <th>Transaction ID</th>
+                  <th>Razor Payment ID</th>
+                  <th>Store</th>
+                </tr>
+              </thead>
+              <tbody id="table_body">
+                {% for data in settlement_data %}
+
+                <tr class="text-center">
+
+                  <td>{{data.placed_order_user_id}}</td>
+                  <td>{{data.placed_order_user_id__user_name}}</td>
+                  <td>{{data.placed_order_id}}</td>
+                  <td>{{data.placed_order_date}}</td>
+                  <td>{{data.placed_order_delivery_date}}</td>
+                  <td>{{data.placed_order_packed_time}}</td>
+                  <td>{{data.placed_order_price}}</td>
+                  <td>{{data.wallet_adjst_credit}}</td>
+                  <td>{{data.wallet_adjst_debit}}</td>
+                  <td>{{data.placed_order_discount}}</td>
+                  <td>{{data.placed_order_pq_total}}</td>
+                  <td>{{data.placed_order_packed_sum}}</td>
+                  <td>{{data.placed_order_shipping_charge}}</td>
+                  <td>{{data.placed_order_gst}}</td>
+                  <td>{{data.wallet_used_credit}}</td>
+                  <td>{{data.wallet_used_debit}}</td>
+                  <td>{{data.bf_amount}}</td>
+                  <td>{{data.by_cash}}</td>
+                  <td>{{data.placed_order_payment_status_id__payment_status_name}}</td>
+                  <td>{{data.placed_order_type_id}}</td>
+                  <td>{{data.placed_order_order_status_id}}</td>
+                  <td>{{data.placed_order_txtn_id}}</td>
+                  <td>{{data.razor_payment_id}}</td>
+                  <td>{{data.placed_order_store_id}}</td>
+                  <!-- <td>{{data.placed_order_wallet_amount}}</td>
                     <td>{{data.placed_order_packed_wallet_adjustment}}</td> -->
-                  </tr>
-                  {% endfor %}
+                </tr>
+                {% endfor %}
 
-                </tbody>
-                <tfoot>
-                  <td colspan="6" class="text-center">total</td>
-                  <td id="sub_total">{{sum_data.sub_total}}</td>
-                  <td id="wallet_adjst_credit">{{sum_data.sum_adjst_credit}}</td>
-                  <td id="wallet_adjst_debit">{{sum_data.sum_adjst_debit}}</td>
-                  <td id="discount">{{sum_data.discount}}</td>
-                  <td id="pg_total">{{sum_data.placed_order_pq_total}}</td>
-                  <td id="packed_sum">{{sum_data.packed_sum}}</td>
-                  <td id="shipping">{{sum_data.shipping}}</td>
-                  <td id="gst">{{sum_data.gst}}</td>
-                  <td id="wallet_used_credit">{{sum_data.sum_used_credit}}</td>
-                  <td id="wallet_used_debit">{{sum_data.sum_used_debit}}</td>
-                  <td id="online_creditted">{{sum_data.online_credited}}</td>
-                  <td id="by_cash">{{sum_data.sum_by_Cash}}</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tfoot>
-              </table>
-            </div>
-
-            <!-- /.card-body -->
+              </tbody>
+              <tfoot>
+                <td colspan="6" class="text-center">total</td>
+                <td id="sub_total">{{sum_data.sub_total}}</td>
+                <td id="wallet_adjst_credit">{{sum_data.sum_adjst_credit}}</td>
+                <td id="wallet_adjst_debit">{{sum_data.sum_adjst_debit}}</td>
+                <td id="discount">{{sum_data.discount}}</td>
+                <td id="pg_total">{{sum_data.placed_order_pq_total}}</td>
+                <td id="packed_sum">{{sum_data.packed_sum}}</td>
+                <td id="shipping">{{sum_data.shipping}}</td>
+                <td id="gst">{{sum_data.gst}}</td>
+                <td id="wallet_used_credit">{{sum_data.sum_used_credit}}</td>
+                <td id="wallet_used_debit">{{sum_data.sum_used_debit}}</td>
+                <td id="online_creditted">{{sum_data.online_credited}}</td>
+                <td id="by_cash">{{sum_data.sum_by_Cash}}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tfoot>
+            </table>
           </div>
-          <!-- /.card -->
 
+          <!-- /.card-body -->
         </div>
-        <!-- /.col -->
+        <!-- /.card -->
+
       </div>
-      <!-- /.row -->
+      <!-- /.col -->
     </div>
-    <!-- /.container-fluid -->
-  </section>
-  <!-- /.content -->
+    <!-- /.row -->
+</div>
+<!-- /.container-fluid -->
+</section>
+<!-- /.content -->
 </div>
 <!-- /.row -->
 </div><!-- /.container-fluid -->
@@ -251,33 +252,33 @@
 <!-- page script -->
 
 <script>
-      $("#select_store").change(function () {
-      var store = $(this).val(); 
-      $.ajax({    
-        method:'POST',                 
-        url: '/select_cities/',                 
-        data: {
-          'store': store ,     
-          'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
+  $("#select_store").change(function () {
+    var store = $(this).val();
+    $.ajax({
+      method: 'POST',
+      url: '/select_cities/',
+      data: {
+        'store': store,
+        'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
 
-        },
-        success: function (response){  
-          city=response.city_data
-          $("#select_city").empty();
-          $('#select_city').append('<option value="All">All</option>')
-          $.each(city, function (i, item) {
-              $('#select_city').append($('<option>', { 
-              value: item.name,
-              text : item.name 
+      },
+      success: function (response) {
+        city = response.city_data
+        $("#select_city").empty();
+        $('#select_city').append('<option value="All">All</option>')
+        $.each(city, function (i, item) {
+          $('#select_city').append($('<option>', {
+            value: item.name,
+            text: item.name
           }));
         });
 
-        }
-      });
-
+      }
     });
 
-    $(window).on("load",function(){
+  });
+
+  $(window).on("load", function () {
     $(".loader-wrapper").fadeOut("slow");
   });
 
@@ -301,26 +302,25 @@
   }
 
   $('#btn_filter').click(function () {
-    var store=$('#select_store option:selected').text();
-    var city=$('#select_city option:selected').text();
+    var store = $('#select_store option:selected').text();
+    var city = $('#select_city option:selected').text();
     var date_filter = $('#select_date_filter').find(":selected").text();
-    var order_type=$('#select_order_type').find(":selected").text();
+    var order_type = $('#select_order_type').find(":selected").text();
     var min = $('#min').val();
     var max = $('#max').val();
-      // disable button
-      console.log(order_type);
-      $(this).prop("disabled", true);
-      // add loading to button
-      $(this).val('loading...');
+    // disable button
+    $(this).prop("disabled", true);
+    // add loading to button
+    $(this).val('loading...');
 
     $.ajax({
       method: 'POST',
       url: '/filter_settlement/',
       data: {
-        "store":store,
-        "date_filter":date_filter,
-        "order_type":order_type,
-        "city":city,
+        "store": store,
+        "date_filter": date_filter,
+        "order_type": order_type,
+        "city": city,
         "min": min,
         "max": max,
         'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val(),
@@ -329,40 +329,39 @@
 
       success: function (response) {
         data = response.settlement_data;
-        sum_data=response.sum_data
-        console.log(sum_data);
+        sum_data = response.sum_data
         $('#settlement_report').DataTable().clear().destroy();
         var trHTML = '';
         $.each(data, function (i, item) {
-          trHTML += '<tr class="text-center"><td>' 
-              + item.placed_order_user_id + '</td><td>' 
-                + item.placed_order_user_id__user_name + '</td><td>' 
-                  + item.placed_order_id + '</td><td>' 
-                    + item.placed_order_date + '</td><td>' 
-                      + item.placed_order_delivery_date  + '</td><td>' 
-                        + item.placed_order_packed_time + '</td><td>' 
-                          + item.placed_order_price + '</td><td>' 
-                            + item.wallet_adjst_credit + '</td><td>' 
-                              + item.wallet_adjst_debit + '</td><td>' 
-                                + item.placed_order_discount + '</td><td>' 
-                                  + item.placed_order_pq_total + '</td><td>' 
-                                    + item.placed_order_packed_sum + '</td><td>' 
-                                      + item.placed_order_shipping_charge + '</td><td>' 
-                                        + item.placed_order_gst + '</td><td>' 
-                                          + item.wallet_used_credit + '</td><td>' 
-                                            + item.wallet_used_debit + '</td><td>' 
-                                              + item.bf_amount + '</td><td>' 
-                                                + item.by_cash + '</td><td>' 
-                                                  + item.placed_order_payment_status_id__payment_status_name + '</td><td>' 
-                                                    + item.placed_order_type_id + '</td><td>' 
-                                                      + item.placed_order_order_status_id + '</td><td>'  
-                                                        + item.placed_order_txtn_id + '</td><td>' 
-                                                          + item.razor_payment_id + '</td><td>' 
-                                                            + item.placed_order_store_id + '</td></tr>'; 
-                                                  
+          trHTML += '<tr class="text-center"><td>'
+            + item.placed_order_user_id + '</td><td>'
+            + item.placed_order_user_id__user_name + '</td><td>'
+            + item.placed_order_id + '</td><td>'
+            + item.placed_order_date + '</td><td>'
+            + item.placed_order_delivery_date + '</td><td>'
+            + item.placed_order_packed_time + '</td><td>'
+            + item.placed_order_price + '</td><td>'
+            + item.wallet_adjst_credit + '</td><td>'
+            + item.wallet_adjst_debit + '</td><td>'
+            + item.placed_order_discount + '</td><td>'
+            + item.placed_order_pq_total + '</td><td>'
+            + item.placed_order_packed_sum + '</td><td>'
+            + item.placed_order_shipping_charge + '</td><td>'
+            + item.placed_order_gst + '</td><td>'
+            + item.wallet_used_credit + '</td><td>'
+            + item.wallet_used_debit + '</td><td>'
+            + item.bf_amount + '</td><td>'
+            + item.by_cash + '</td><td>'
+            + item.placed_order_payment_status_id__payment_status_name + '</td><td>'
+            + item.placed_order_type_id + '</td><td>'
+            + item.placed_order_order_status_id + '</td><td>'
+            + item.placed_order_txtn_id + '</td><td>'
+            + item.razor_payment_id + '</td><td>'
+            + item.placed_order_store_id + '</td></tr>';
+
         });
         $('#settlement_report').append(trHTML);
-        
+
         $('#sub_total').html(sum_data.sub_total);
         $('#shipping').html(sum_data.shipping);
         // $('#gst').html()
@@ -376,7 +375,6 @@
         $('#wallet_adjst_debit').html(sum_data.sum_adjst_debit)
         $('#wallet_used_credit').html(sum_data.sum_used_credit)
         $('#wallet_used_debit').html(sum_data.sum_used_debit)
-        loadDataTable()
         $('#btn_filter').prop("disabled", false);
         $('#btn_filter').val('Filter');
 

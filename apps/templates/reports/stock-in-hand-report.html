@@ -38,10 +38,6 @@
               <form class="form-inline">
                 {% csrf_token %}
 
-                <!-- <div class="form-group mb-2">
-                  <label>Select Store: </label>
-                  <input class="form-control" type="text" id="store" name="store">
-                </div> -->
                 <label>Select Store : </label>
                 <select class="form-select" id="selected_store">
                   {% for store in stores %}
@@ -49,14 +45,14 @@
                   {% endfor %}
                 </select>
 
-                <div class="form-group mb-2">
+                <!-- <div class="form-group mb-2">
                   <label>Stock On Last Audit: </label>
                   <input class="form-control" type="date" id="date" name="date">
                 </div>
                 <div class="form-group mb-2">
                   <label>On Date: </label>
                   <input class="form-control" type="date" id="date" name="date">
-                </div>
+                </div> -->
 
                 <label>SKU Name : </label>
                 <select class="form-select" id="selected_veg">
@@ -98,9 +94,9 @@
                     <td>{{stock.veg_inventory_veg_id__veg_name}}</td>
                     <td>{{stock.audit_log_detail_qty}}</td>
                     <td>{{stock.inventory_veg_qty}}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>{{stock.stock_sent}}</td>
+                    <td>{{stock.wastage}}</td>
+                    <td>{{stock.packed_order_qty}}</td>
                     <td>{{stock.order_placed_id}}</td>
                     <td>{{stock.veg_inventory_stock_in_hand}}</td>
                     <td>{{stock.veg_inventory_veg_id__veg_basic_rate}}</td>
@@ -207,11 +203,23 @@
 
       success:function(response){
         data = response.data;
-        console.log(data);
         $('#stock_table').DataTable().clear().destroy();
         var trHTML = '';
         $.each(data, function (i, item) {
-          trHTML += '<tr class="text-center"><td>' + item.veg_inventory_id + '</td><td>' + item.veg_inventory_veg_id + '</td><td>' + item.veg_inventory_veg_id__veg_name + '</td><td>' + item.veg_inventory_stock_in_hand +'</td><td>'+item.veg_inventory_veg_id__veg_basic_rate +'</td><td>'+item.veg_inventory_veg_id__veg_measurement+'</td></tr>';
+          trHTML += '<tr class="text-center"><td>' 
+            + item.veg_inventory_id + '</td><td>' 
+              + item.veg_inventory_veg_id + '</td><td>' 
+                + item.veg_inventory_veg_id__veg_name + '</td><td>' 
+                  + item.audit_log_detail_qty + '</td><td>' 
+                    + item.inventory_veg_qty + '</td><td>' 
+                      + item.stock_sent + '</td><td>' 
+                        + item.wastage + '</td><td>' 
+                          + item.packed_order_qty + '</td><td>' 
+                            + item.order_placed_id +'</td><td>'
+                              +item.veg_inventory_stock_in_hand +'</td><td>'
+                                +item.veg_inventory_veg_id__veg_basic_rate +'</td><td>'
+                                  +item.stock_total +'</td><td>'
+                                    +item.veg_inventory_veg_id__veg_measurement+'</td></tr>';
         });
         $('#stock_table').append(trHTML);
 
