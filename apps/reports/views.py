@@ -1,3 +1,4 @@
+import re
 from django.http import JsonResponse
 from django.shortcuts import render
 from .models import ffz_inventory_log, ffz_main_city, ffz_orders, ffz_packed, ffz_placed_orders, ffz_razor_payment_history, ffz_store, ffz_audit_log_details, ffz_category, ffz_transaction_before, ffz_user_referral, ffz_users, ffz_veg_inventory, ffz_veg_price, ffz_vegitables, Notify, ffz_wallet_trans, ffz_wallet_trans_history
@@ -1112,3 +1113,28 @@ def getfilterUser(requset):
         return JsonResponse({
             'user_data': list(user_data),
         })
+        
+
+def delivery_sales_report(request):
+    delivery_sales_data=ffz_placed_orders.objects.filter().values(
+        'placed_order_delivery_date'
+        ).order_by(
+            'placed_order_delivery_date'
+            ).annotate(
+                total_order=Sum('placed_order_delivery_date'),
+                order_sum=Sum('placed_order_price'),
+                exp_sum=Sum('placed_delivery_express_pref'),
+                discount_sum=Sum('placed_order_discount'),
+                packed_sum=Sum('placed_order_packed_sum'),
+                wallet=Sum('placed_order_wallet_amount'),
+                pq_total=Sum('placed_order_pq_total')
+                )
+    exp_orders=ffz_placed_orders.objects.filter(~Q(placed_delivery_express_pref=0)).values(
+        'placed_delivery_express_pref',
+        'placed_order_delivery_date').order_by('placed_order_delivery_date')
+    # print(exp_orders)
+    return render(
+        request,
+        'reports/delivery_sale_report.html',
+        {'delivery_sales_data':delivery_sales_data}
+        )

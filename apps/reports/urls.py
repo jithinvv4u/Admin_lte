@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import getPiechartWallet, getfilterNotify, getfilterOrderWallet, getfilterReferrals, getfilterStock,getfilterSettlement, getfilterUser, load_cities, newUser, order_wallet_trans, settlement_report, stock_in_hand_view, user_referral_report, veg_price_view,wallet_transaction_view,notify_report_view,getfilterWallet,getfilterVeg,veg_inv_sale_report,daily_sale_report
+from .views import delivery_sales_report, getPiechartWallet, getfilterNotify, getfilterOrderWallet, getfilterReferrals, getfilterStock,getfilterSettlement, getfilterUser, load_cities, newUser, order_wallet_trans, settlement_report, stock_in_hand_view, user_referral_report, veg_price_view,wallet_transaction_view,notify_report_view,getfilterWallet,getfilterVeg
 
 urlpatterns = [
 
@@ -28,6 +28,9 @@ urlpatterns = [
     
     path('reports/new_user_report/',newUser,name='new_user'),
     path('filter_newUser/',getfilterUser),
+    
+    path('reports/delivery_sales/',delivery_sales_report,name='delivery_sales'),
+    # path('filter_newUser/',getfilterUser),
     
     
 ]

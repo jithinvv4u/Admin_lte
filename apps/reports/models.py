@@ -179,6 +179,9 @@ class ffz_placed_orders(models.Model):
     placed_order_discount=models.FloatField()
     placed_order_pq_total=models.FloatField()
     placed_order_order_status_id=models.CharField(max_length=45)
+    placed_delivery_express_pref=models.IntegerField()
+    placed_order_packed_sum=models.FloatField()
+    placed_delivery_express_pref=models.IntegerField()
     placed_order_city_id=models.ForeignKey(
         ffz_main_city,
         on_delete=models.CASCADE,
