@@ -1127,11 +1127,13 @@ def delivery_sales_report(request):
                 discount_sum=Sum('placed_order_discount'),
                 packed_sum=Sum('placed_order_packed_sum'),
                 wallet=Sum('placed_order_wallet_amount'),
-                pq_total=Sum('placed_order_pq_total')
+                pq_total=Sum('placed_order_pq_total'),
+                exp_orders=Sum('placed_delivery_express_pref',filter=~Q(placed_delivery_express_pref=0),),
+                shipping_charge=Sum('placed_order_shipping_charge'),
                 )
-    exp_orders=ffz_placed_orders.objects.filter(~Q(placed_delivery_express_pref=0)).values(
-        'placed_delivery_express_pref',
-        'placed_order_delivery_date').order_by('placed_order_delivery_date')
+    # exp_orders=ffz_placed_orders.objects.filter(~Q(placed_delivery_express_pref=0)).values(
+    #     'placed_delivery_express_pref',
+    #     'placed_order_delivery_date').order_by('placed_order_delivery_date')
     # print(exp_orders)
     return render(
         request,
