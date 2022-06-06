@@ -15,4 +15,14 @@ apps/reports/__pycache__/
 apps/temp/__pycache__/
 core/__pycache__/
 venv/
-
+apps/authentication/migrations/
+apps/common/migrations/
+apps/farmers/migrations/
+apps/ffzusers/migrations/
+apps/inventory/migrations/
+apps/locations/migrations/
+apps/logs/migrations/
+apps/offers/migrations/
+apps/orders/migrations/
+apps/payments/migrations/
+apps/products/migrations/
