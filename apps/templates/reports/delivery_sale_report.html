@@ -106,13 +106,19 @@
                     <td>{{data.exp_sum}}</td>
                     <td>{{data.discount_sum}}</td>
                     <td>{{data.packed_sum}}</td>
-                    <td></td>
+                    <td>{{data.online}}</td>
                     <td>{{data.wallet}}</td>
-                    <td></td>
+                    <td>{{data.offline}}</td>
                     <td>{{data.shipping_charge}}</td>
                     <td>{{data.pq_total}}</td>
-                    <td></td>
+                    {% if data.placed_order_delivery_status %}
+                    <!-- placed_order_delivery_status!=0 -->
+                    <td>Incomplete</td>
+                    <!-- placed_order_delivery_status=0 -->
+                    {% else %}
+                    <td>Completed</td>
 
+                    {% endif %}
                   </tr>
                   {% endfor %}
 

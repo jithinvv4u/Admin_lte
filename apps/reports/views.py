@@ -1117,7 +1117,8 @@ def getfilterUser(requset):
 
 def delivery_sales_report(request):
     delivery_sales_data=ffz_placed_orders.objects.filter().values(
-        'placed_order_delivery_date'
+        'placed_order_delivery_date',
+        'placed_order_delivery_status'
         ).order_by(
             'placed_order_delivery_date'
             ).annotate(
@@ -1130,6 +1131,8 @@ def delivery_sales_report(request):
                 pq_total=Sum('placed_order_pq_total'),
                 exp_orders=Sum('placed_delivery_express_pref',filter=~Q(placed_delivery_express_pref=0),),
                 shipping_charge=Sum('placed_order_shipping_charge'),
+                online=Sum('placed_order_price',filter=Q(placed_order_payment_method=0)),
+                offline=Sum('placed_order_price',filter=~Q(placed_order_payment_method=0)),
                 )
     # exp_orders=ffz_placed_orders.objects.filter(~Q(placed_delivery_express_pref=0)).values(
     #     'placed_delivery_express_pref',

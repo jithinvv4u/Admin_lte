@@ -191,6 +191,8 @@ class ffz_placed_orders(models.Model):
         ffz_payment_status,
         on_delete=models.CASCADE,
         db_column='placed_order_payment_status_id',blank=True)
+    placed_order_payment_method=models.IntegerField()
+    placed_order_delivery_status=models.IntegerField()
     placed_order_order_status_id=models.IntegerField(blank=True)
     placed_order_type_id=models.IntegerField(blank=True)
     placed_order_txtn_id=models.CharField(max_length=45)
