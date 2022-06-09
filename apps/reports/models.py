@@ -164,6 +164,42 @@ class placedOrderManager(models.Manager):
                 items.append(obj)
         return items
 
+# class placedOrderManager(models.Manager):
+    
+#     def delivery_date_filter(self, store, start_date, end_date):
+#         items = []
+#         estimated_placed_order_st_date = datetime.strptime(start_date, '%Y-%m-%d') - timedelta(days=4)
+#         date_filter = {
+#             'placed_order_store_id__store_name': store,
+#             'placed_order_date__range': (estimated_placed_order_st_date, datetime.strptime(end_date, '%Y-%m-%d'))
+#         }
+#         placed_orders = self.filter(
+#             Q(**date_filter)
+#             ).order_by('placed_order_date').values(
+#             'placed_order_user_id',
+#             'placed_order_user_id__user_name',
+#             'placed_order_id',
+#             'placed_order_date',
+#             'placed_order_delivery_date',
+#             'placed_order_packed_time',
+#             'placed_order_price',
+#             'placed_order_shipping_charge',
+#             'placed_order_gst',
+#             'placed_order_packed_sum',
+#             'placed_order_wallet_amount',
+#             'placed_order_packed_wallet_adjustment',
+#             'placed_order_payment_status_id__payment_status_name',
+#             'placed_order_order_status_id',
+#             'placed_order_type_id',
+#             'placed_order_txtn_id',
+#             'placed_order_store_id',
+#             'placed_order_discount',
+#             'placed_order_pq_total')
+#         for obj in placed_orders:
+#             if datetime.strptime(obj['placed_order_delivery_date'],'%d-%m-%Y') >= datetime.strptime(start_date, '%Y-%m-%d') and datetime.strptime(obj['placed_order_delivery_date'],'%d-%m-%Y') <= datetime.strptime(end_date, '%Y-%m-%d'):
+#                 items.append(obj)
+#         return items
+
 
 class ffz_placed_orders(models.Model):
     placed_order_id=models.AutoField(primary_key=True)

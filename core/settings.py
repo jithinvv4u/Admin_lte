@@ -86,56 +86,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         # 'NAME': 'farmersfz',
-#         # 'USER': 'root',
-#         # 'PASSWORD': 'lockit',
-#         # 'HOST': 'host.docker.internal',
-#         # 'HOST': '172.16.0.57',
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'testdb',
-#         'USER': 'root',
-#         'PASSWORD': 'roo@123',
-#         'OPTIONS': {
-#             'charset': 'utf8mb4'
-#         },
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#     },
-#     # 'farmers': {
-#     #     'ENGINE': 'django.db.backends.mysql',
-#     #     'NAME': DB_FARMERS,
-#     #     'USER': DB_USERNAME,
-#     #     'PASSWORD': DB_PASSWORD,
-#     #     'HOST': DB_HOST,
-#     #     'PORT': '3306',
-#     # }
-# }
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'farmersfz_production_clone_20210807',
-        'USER': 'api_server',
-        'PASSWORD': 'c7a9cce341bf1b7d63125a97d8b98750#FZ',
-        'OPTIONS': {
-            'charset': 'utf8mb4'
-        },
-        'HOST': '3.6.112.246',
-        'PORT': '3306',
-    },
-    'farmers': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'farmer',
-        'USER': 'api_server',
-        'PASSWORD': 'c7a9cce341bf1b7d63125a97d8b98750#FZ',
-        'HOST': '3.6.112.246',
-        'PORT': '3306',
-    }
 }
 
 # Password validation
